@@ -1,28 +1,23 @@
-# Blok Dunyo: telefonga ilova qilib o'rnatish
+# Blok Dunyo: telefonga ilova qilib oʻrnatish
 
-Bu papkada tayyor ilova (PWA): `index.html` (Blok Dunyo), `studiya.html` (Blok Studiya), `manifest.json`, `sw.js` va 3 ta ikonka.
-Ilova saytga joylangach telefonga oddiy ilova kabi o'rnatiladi. Ikki yo'l bor.
+GitHub’ga yuklanadigan 9 ta fayl (papkalarsiz, hammasi bitta joyga):
+`index.html`, `studiya.html`, `manifest.json`, `sw.js`, `config.js`, `friends.js`, `icon-192.png`, `icon-512.png`, `maskable-512.png`.
+`_docs` papkasi va shu README yuklanmaydi.
 
-## 1-qadam: saytga joylash (bepul, GitHub Pages)
+## 1. GitHub Pages
+Repozitoriyga fayllarni yuklang (Add file → Upload files, **Commit directly to main**). Settings → Pages → Branch `main`, `/ (root)`, Save.
+Havola: `https://AKKAUNT.github.io/REPO-NOMI/`
 
-1. Zip faylni telefonda oching (Fayllar ilovasi, zip ustiga bosib "Chiqarish").
-2. github.com ga kiring, akkaunt oching, **New repository** bosing. Nomi: `blok-dunyo`, **Public**, Create.
-3. **uploading an existing file** havolasini bosing va chiqarilgan **hamma 7 ta faylni** tanlang. **Commit changes** bosing.
-4. **Settings → Pages**: Branch `main`, papka `/ (root)`, **Save**.
-5. 1–2 daqiqadan keyin havola tayyor bo'ladi: `https://AKKAUNT-NOMINGIZ.github.io/blok-dunyo/`
+## 2. Ilovani oʻrnatish
+Chrome’da havolani oching → ⋮ → Ilovani oʻrnatish.
 
-## 2-qadam (A): ilova sifatida o'rnatish, eng oson
+## 3. Hisob va doʻstlarni yoqish
+1. `_docs/SOZLASH-uz.md` dagi qadamlarni bajaring (Supabase).
+2. GitHub’da `config.js` ni oching → qalam belgisi → `url:''` va `key:''` ichiga Supabase URL va **anon** kalitni yozing → Commit.
+3. Ilovani yopib qayta oching. **Doʻstlar** boʻlimida kirish oynasi chiqadi.
 
-Havolani telefondagi **Chrome**'da oching, ⋮ menyu → **Ilovani o'rnatish** (Install app) yoki **Bosh ekranga qo'shish**. Ikonka ekraningizda paydo bo'ladi va to'liq ekranda ochiladi.
-
-## 2-qadam (B): APK fayl olish
-
-1. pwabuilder.com ga kiring, havolangizni kiriting, **Start**.
-2. **Package for stores → Android** → ma'lumotlarni to'ldiring → yuklab oling.
-3. Olingan `.apk` ni telefonga o'rnating (Android "noma'lum manbalardan o'rnatish" ruxsatini so'raydi).
+⚠ `service_role` kalitni config.js ga hech qachon yozmang.
 
 ## Eslatmalar
-
-- Birinchi ochilishda internet kerak (3D kutubxonasi internetdan yuklanadi, keyin telefonda saqlanadi).
-- Tangalar, kiyimlar va yaratgan sahnalaringiz shu telefonning o'zida saqlanadi.
-- GitHub Pages ochiq: havolani bilgan har kim ilovani ocha oladi.
+- Birinchi ochilishda internet kerak.
+- Parolni unutsangiz tiklab boʻlmaydi (pochta soʻralmaydi).
