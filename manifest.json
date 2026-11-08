@@ -1,0 +1,32 @@
+{
+ "name": "Blok Dunyo",
+ "short_name": "Blok Dunyo",
+ "description": "Avatar, doʻkon va oʻyinlar. Obby yarating va oʻynang.",
+ "lang": "uz",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "any",
+ "background_color": "#101317",
+ "theme_color": "#101317",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}

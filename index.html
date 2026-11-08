@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Blok Dunyo</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#101317">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<style>
+:root{color-scheme:light dark;--bg:#f6f7f9;--surface:#fff;--raised:#eef0f3;--text:#14171c;--muted:#5b6470;--line:#e3e6ea;--accent:#3db8a5;--on-accent:#06231f;--input:#868e98;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#101317;--surface:#1a1f26;--raised:#232a33;--text:#f2f4f7;--muted:#a5afbb;--line:#2e3640;--input:#7a8694}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:16px/24px Inter,Roboto,system-ui,sans-serif;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100%}
+.off{display:none!important}
+button{font:600 15px/22px inherit;font-family:inherit;color:var(--text);background:var(--raised);border:0;border-radius:12px;min-height:48px;min-width:48px;padding:0 14px}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{display:flex;align-items:center;justify-content:center;background:var(--accent);color:var(--on-accent);border-radius:12px;min-height:48px;padding:0 18px;font-weight:700;text-decoration:none;border:0;width:100%;box-sizing:border-box}
+.btn:disabled{opacity:.45}
+#top{display:flex;align-items:center;gap:8px;padding:8px 12px;min-height:56px;box-sizing:border-box;position:relative;z-index:2}
+#title{flex:1;font-weight:700;font-size:20px;display:flex;align-items:center;gap:8px}
+#splash{position:fixed;inset:0;z-index:20;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity 400ms}
+#splash.hide{opacity:0;pointer-events:none}
+#splash svg{width:min(82vw,440px);height:auto}
+.lg-b{fill:var(--text)}.lg-d{fill:var(--accent)}
+#seg{display:flex;flex:1;justify-content:center}
+#seg div{display:flex;background:var(--surface);border-radius:999px;padding:4px;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+#seg button{background:none;border-radius:999px;min-height:40px}
+#seg button[aria-pressed=true]{background:var(--raised)}
+#coins{background:var(--surface);border-radius:999px;padding:4px 12px;font-weight:700;font-size:14px;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+#sbtn{background:var(--surface);border-radius:999px}
+#search{padding:0 12px 8px;position:relative;z-index:2}
+#q{width:100%;box-sizing:border-box;height:44px;border-radius:12px;border:1px solid var(--input);background:var(--surface);color:var(--text);font:inherit;padding:0 12px}
+#pg-me{flex:1;min-height:0;display:flex;flex-direction:column;margin-top:-56px}
+#stage{flex:1;min-height:0;position:relative;background:linear-gradient(160deg,#e6e29a,#e9c6d6 55%,#c9aee0)}
+#stage canvas{display:block;width:100%;height:100%;touch-action:pan-y}
+#msg{position:absolute;inset:0;display:none;align-items:center;justify-content:center;color:#333;padding:24px;text-align:center}
+#sheet{background:var(--surface);border-radius:20px 20px 0 0;box-shadow:0 -8px 24px rgba(0,0,0,.18);display:flex;flex-direction:column;height:150px;overflow:hidden;transition:height 200ms cubic-bezier(.2,.8,.2,1)}
+#sheet.x{height:50%}#sheet.f{height:calc(100% - 56px)}#sheet.drag{transition:none}
+#grab{height:40px;min-height:40px;touch-action:none;width:100%;background:none;border-radius:0;display:flex;align-items:center;justify-content:center}
+#grab i{width:40px;height:4px;border-radius:2px;background:var(--input)}
+#tabs{display:flex;overflow-x:auto;border-bottom:1px solid var(--line)}
+#tabs button{background:none;border-radius:0;color:var(--muted);border-bottom:3px solid transparent;flex:none}
+#tabs button[aria-selected=true]{color:var(--text);border-bottom-color:var(--accent)}
+#act{display:flex;align-items:center;gap:12px;padding:8px 12px;border-bottom:1px solid var(--line)}
+#act b{flex:1}#act .btn{width:auto;flex:none}
+#grid{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:max-content;gap:8px;padding:12px;align-content:start}
+.card{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;background:var(--raised);height:auto;border:2px solid transparent;font-size:13px;min-height:104px}
+.card[aria-pressed=true]{border-color:var(--accent)}
+.card small{color:var(--muted);font-weight:500}.card small.on{color:var(--text);font-weight:700}
+.dot{width:44px;height:44px;border-radius:22px;border:1px solid var(--line);display:block}
+.bgp{width:56px;height:44px;border-radius:10px;display:block;border:1px solid var(--line)}
+.em{font-size:32px;line-height:44px}
+.empty{grid-column:1/-1;color:var(--muted);padding:16px}
+.card{align-items:stretch;text-align:left;background:none;padding:0;gap:3px;min-height:0;border:0;font-size:15px}.card[aria-pressed=true]{border:0}
+.th{width:100%;height:min(calc((100vw - 40px)/3),170px);border-radius:14px;background:var(--raised);display:flex;align-items:center;justify-content:center;border:3px solid transparent;box-sizing:border-box;overflow:hidden}
+.card[aria-pressed=true] .th{border-color:var(--accent)}
+.th .dot{width:68px;height:68px;border-radius:34px}.th .bgp{width:100%;height:100%;border:0;border-radius:0}.th .em{font-size:52px;line-height:1}
+.nm{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
+.cr{color:var(--muted);font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pr{font-weight:700;font-size:15px}.vf{display:inline-block;background:#2f6df5;color:#fff;font-style:normal;font-size:11px;line-height:16px;width:16px;text-align:center;border-radius:4px}
+.sec{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;margin-top:6px}.sec h3{margin:0;font-size:22px}
+.pill{min-height:40px;background:none;border:1.5px solid var(--text);border-radius:8px;font-size:15px;padding:0 12px}
+.pg{flex:1;overflow-y:auto;padding:4px 12px 12px;display:flex;flex-direction:column;gap:10px}
+.game{display:flex;align-items:center;gap:12px;text-align:left;background:var(--surface);height:auto;padding:10px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.gt{width:72px;height:72px;border-radius:14px;flex:none;display:block}
+.game div{flex:1;display:flex;flex-direction:column}.game small{color:var(--muted);font-weight:500}
+.rk{font-size:20px;font-weight:800;width:28px;text-align:center}
+#gpage{position:absolute;inset:0;background:var(--bg);z-index:5;display:flex;flex-direction:column;gap:12px;padding:12px;box-sizing:border-box;overflow-y:auto;padding-top:calc(12px + env(safe-area-inset-top,0px))}
+#gban{height:180px;border-radius:20px;flex:none}
+#gpage h2{margin:0}#gpage p{margin:0;color:var(--muted)}
+#nav{display:flex;background:var(--surface);border-top:1px solid var(--line)}
+#nav button{flex:1;background:none;border-radius:0;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:56px;font-size:13px;line-height:16px}
+#nav button[aria-current=page]{color:var(--text);box-shadow:inset 0 3px 0 var(--accent)}
+#nav span{font-size:20px;line-height:24px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="top">
+    <span id="title" class="off"></span>
+    <div id="seg"><div><button data-m="market" aria-pressed="true">Doʻkon</button><button data-m="custom" aria-pressed="false">Kiyimim</button></div></div>
+    <span id="coins" aria-label="Tangalar"></span>
+    <button id="sbtn" aria-label="Qidirish">⌕</button>
+  </header>
+  <div id="search" class="off"><input id="q" type="search" placeholder="Narsani qidiring" aria-label="Qidirish"></div>
+  <main id="pg-me">
+    <div id="stage"><div id="msg">3D avatar bu qurilmada ishlamadi.</div></div>
+    <section id="sheet">
+      <button id="grab" aria-label="Panelni ochish yoki yopish"><i></i></button>
+      <div id="tabs" role="tablist"></div>
+      <div id="act" class="off"></div>
+      <div id="grid"></div>
+    </section>
+  </main>
+  <main id="pg-home" class="pg off"></main>
+  <main id="pg-charts" class="pg off"></main>
+  <nav id="nav">
+    <button data-p="home"><span>⌂</span>Bosh</button>
+    <button data-p="charts"><span>▥</span>Reyting</button>
+    <button data-p="me" aria-current="page"><span>☺</span>Men</button>
+  </nav>
+</div>
+<div id="splash" role="img" aria-label="Blok Dunyo"><svg viewBox="0 0 1180 512" aria-hidden="true"><g><polygon points="256,140 369,205 256,270 143,205" fill="#8ff0de"/><polygon points="143,205 256,270 256,400 143,335" fill="#3db8a5"/><polygon points="256,270 369,205 369,335 256,400" fill="#2a8a7b"/><polygon points="392,70 434,94 392,118 350,94" fill="#ffd98a"/><polygon points="350,94 392,118 392,166 350,142" fill="#f2b84b"/><polygon points="392,118 434,94 434,142 392,166" fill="#c98f1f"/><polygon points="120,364 155,384 120,404 85,384" fill="#a9cbff"/><polygon points="85,384 120,404 120,444 85,424" fill="#5c9cf2"/><polygon points="120,404 155,384 155,424 120,444" fill="#3f74c4"/></g><text class="lg-b" x="520" y="318" font-family="Inter,Roboto,Arial,sans-serif" font-size="150" font-weight="800" letter-spacing="2">BLOK</text><text class="lg-d" x="520" y="448" font-family="Inter,Roboto,Arial,sans-serif" font-size="150" font-weight="800" letter-spacing="2">DUNYO</text></svg></div>
+<div id="gpage" class="off"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),KEY='blokdunyo:v1';
+const CATS=[['all','Hammasi'],['skin','Teri'],['sh','Koʻylak'],['pa','Shim'],['bg','Fon'],['ht','Qalpoq']];
+const EM={none:'∅',cap:'🧢',top:'🎩',crown:'👑'};
+const IT=[];const CR=['Blok Dunyo','Ustalar jamoasi','Namuna'];const add=(cat,pre,arr)=>arr.forEach((x,i)=>IT.push({cat,id:pre+i,name:x[0],price:x[1],v:x[2],by:CR[i%3],vf:i%3===1}));
+add('skin','sk',[['Och',0,'#f7e3d0'],['Bugʻdoy',0,'#f1d3b3'],['Qumli',0,'#e8c9a0'],['Qoramtir',0,'#c68e5f'],['Qora',0,'#8d5a3b']]);
+add('sh','sh',[['Feruza',0,'#3db8a5'],['Qizil',0,'#f25c5c'],['Moviy',20,'#5c9cf2'],['Sariq',20,'#f2b84b'],['Binafsha',40,'#a78bfa'],['Qora',40,'#1b1d22'],['Oq',40,'#f2f4f7'],['Yashil',60,'#5cd08a']]);
+add('pa','pa',[['Kulrang',0,'#4a5563'],['Qora',0,'#1b1d22'],['Koʻk',20,'#2f4f9e'],['Xaki',30,'#9a8f6a'],['Oq',30,'#e8eaee'],['Qizil',50,'#a33a3a']]);
+add('bg','bg',[['Sokin',0,'linear-gradient(160deg,#e6e29a,#e9c6d6 55%,#c9aee0)'],['Tong',30,'linear-gradient(180deg,#ffd9a8,#ffb3b3)'],['Okean',40,'linear-gradient(180deg,#a8e6ff,#5c9cf2)'],['Oʻrmon',50,'linear-gradient(180deg,#d6f5d0,#5cb07a)'],['Kecha',60,'linear-gradient(180deg,#2b2f6b,#0f1240)'],['Oddiy',0,'#eef0f3']]);
+add('ht','ht',[['Yoʻq',0,'none'],['Kepka',30,'cap'],['Silindr',60,'top'],['Tojcha',90,'crown']]);
+const byId={};IT.forEach(i=>byId[i.id]=i);
+const GAMES=[
+ {id:'blok',name:'Blok Studiya',by:'Blok Dunyo',d:'Oʻz dunyongni qur: bloklar qoʻy, skript yoz, avatar bilan yugur.',g:'linear-gradient(135deg,#3db8a5,#5c9cf2)',url:'studiya.html'},
+ {id:'obby',name:'Sakrash yoʻli',by:'Namuna',d:'Bu oʻyin hali yaratilmagan. Blok Studiya bilan oʻzingiz yasab qoʻshishingiz mumkin.',g:'linear-gradient(135deg,#f2b84b,#f25c5c)'},
+ {id:'race',name:'Blok poygasi',by:'Namuna',d:'Bu oʻyin hali yaratilmagan.',g:'linear-gradient(135deg,#a78bfa,#5c9cf2)'}];
+let owned=new Set(IT.filter(i=>i.price===0).map(i=>i.id)),worn={skin:'sk2',sh:'sh0',pa:'pa0',bg:'bg0',ht:'ht0'},coins=300,plays={};
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s){owned=new Set(s.owned);worn=Object.assign(worn,s.worn);coins=s.coins;plays=s.plays||{}}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({owned:[...owned],worn,coins,plays}))}catch(e){}}
+let mode='market',cat='all',q='',prev=null,page='me',snap=0;
+/* ---- 3D avatar ---- */
+const stage=$('#stage');let R,scene,camera,av,AM={},hats={},arms=[];
+const D=Math.PI/180;
+try{
+  R=new THREE.WebGLRenderer({antialias:true,alpha:true});R.setPixelRatio(Math.min(devicePixelRatio,2));stage.insertBefore(R.domElement,stage.firstChild);
+  scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(35,1,.1,50);
+  scene.add(new THREE.HemisphereLight(0xffffff,0x8a8a99,1));const dl=new THREE.DirectionalLight(0xffffff,.7);dl.position.set(3,6,5);scene.add(dl);
+  av=new THREE.Group();scene.add(av);['skin','shirt','pants'].forEach(k=>AM[k]=new THREE.MeshStandardMaterial({color:0xcccccc}));
+  const box=(w,h,d,k,y)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),AM[k]);m.position.y=y;return m};
+  const limb=(w,h,d,k,x,y)=>{const g=new THREE.Group();g.position.set(x,y,0);g.add(box(w,h,d,k,-h/2));av.add(g);return g};
+  av.add(box(.8,.9,.4,'shirt',1.2),box(.55,.45,.5,'skin',1.85));
+  const fm=new THREE.MeshBasicMaterial({color:0x222222});[-.12,.12].forEach(x=>{const e=new THREE.Mesh(new THREE.BoxGeometry(.07,.09,.02),fm);e.position.set(x,1.9,.26);av.add(e)});
+  const sm=new THREE.Mesh(new THREE.BoxGeometry(.22,.04,.02),fm);sm.position.set(0,1.76,.26);av.add(sm);
+  arms=[limb(.25,.85,.25,'shirt',-.55,1.65),limb(.25,.85,.25,'shirt',.55,1.65)];limb(.35,.75,.35,'pants',-.2,.75);limb(.35,.75,.35,'pants',.2,.75);
+  const hm=c=>new THREE.MeshStandardMaterial({color:c}),hg=()=>{const g=new THREE.Group();g.position.y=2.075;g.visible=false;av.add(g);return g};
+  hats.cap=hg();let m=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.14,20),hm(0xf25c5c));m.position.y=.07;hats.cap.add(m);m=new THREE.Mesh(new THREE.BoxGeometry(.5,.04,.3),hm(0xf25c5c));m.position.set(0,.02,.32);hats.cap.add(m);
+  hats.top=hg();m=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,.42,20),hm(0x1b1d22));m.position.y=.21;hats.top.add(m);m=new THREE.Mesh(new THREE.CylinderGeometry(.4,.4,.04,20),hm(0x1b1d22));m.position.y=.02;hats.top.add(m);
+  hats.crown=hg();m=new THREE.Mesh(new THREE.ConeGeometry(.32,.32,5),hm(0xf2b84b));m.position.y=.16;hats.crown.add(m);
+  const fit=()=>{const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;R.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
+    const t=Math.tan(17.5*D),d=Math.max(1.55/t,1.1/(t*camera.aspect))+.8;camera.position.set(0,1.15,d);camera.lookAt(0,1.1,0)};
+  new ResizeObserver(fit).observe(stage);
+}catch(e){R=null;$('#msg').style.display='flex'}
+const eff=c=>byId[prev&&prev.cat===c?prev.id:worn[c]];
+function dress(){stage.style.background=eff('bg').v;if(!R)return;AM.skin.color.set(eff('skin').v);AM.shirt.color.set(eff('sh').v);AM.pants.color.set(eff('pa').v);const h=eff('ht').v;for(const k in hats)hats[k].visible=h===k}
+let ry=.35,last=0;
+(function loop(t){if(R&&page==='me'){av.rotation.y=ry+Math.sin(t/1500)*.08;arms[0].rotation.x=Math.sin(t/900)*.06;arms[1].rotation.x=-Math.sin(t/900)*.06;R.render(scene,camera)}requestAnimationFrame(loop)})(0);
+let dx0=null;stage.addEventListener('pointerdown',e=>{if(e.target.tagName==='CANVAS'){dx0=e.clientX;stage.setPointerCapture(e.pointerId)}});
+stage.addEventListener('pointermove',e=>{if(dx0!==null){ry+=(e.clientX-dx0)*.012;dx0=e.clientX}});
+const endD=()=>{dx0=null};stage.addEventListener('pointerup',endD);stage.addEventListener('pointercancel',endD);
+/* ---- shop ---- */
+const $g=$('#grid');let seeAll=false;
+function setSnap(){const s=$('#sheet');s.classList.toggle('x',snap===1);s.classList.toggle('f',snap===2)}
+function card(i){const pv=i.cat==='bg'?`<i class="bgp" style="background:${i.v}"></i>`:i.cat==='ht'?`<span class="em" aria-hidden="true">${EM[i.v]}</span>`:`<i class="dot" style="background:${i.v}"></i>`;
+  const pr=worn[i.cat]===i.id?'<span class="pr">Kiyilgan</span>':owned.has(i.id)?'<span class="pr" style="color:var(--muted)">Sizniki</span>':`<span class="pr">◎ ${i.price}</span>`;
+  return `<button class="card" data-id="${i.id}" aria-pressed="${!!prev&&prev.id===i.id}"><span class="th">${pv}</span><b class="nm">${i.name}</b><span class="cr">${i.by}${i.vf?' <i class="vf" role="img" aria-label="tasdiqlangan">✓</i>':''}</span>${pr}</button>`}
+function gridHtml(L){if(!L.length)return `<div class="empty">${mode==='custom'?'Bu yerda hali hech narsa yoʻq. Doʻkondan xarid qiling.':'Hech narsa topilmadi.'}</div>`;
+  if(cat!=='all'||q)return L.map(card).join('');
+  const m=[...L].sort((x,y)=>parseInt(x.id.replace(/\D/g,''))-parseInt(y.id.replace(/\D/g,''))),a=m.slice(0,6),b=m.slice(6);
+  return `<div class="sec"><h3>${mode==='market'?'Sizga tavsiya':'Kiyimlarim'}</h3></div>`+a.map(card).join('')+(b.length?`<div class="sec"><h3>Uslublarni koʻring</h3><button class="pill" data-see="1">${seeAll?'Yashirish':'Hammasi'}</button></div>`+(seeAll?b:b.slice(0,3)).map(card).join(''):'')}
+function renderSheet(){
+  $('#tabs').innerHTML=CATS.map(c=>`<button role="tab" data-c="${c[0]}" aria-selected="${cat===c[0]}">${c[1]}</button>`).join('');
+  const a=$('#act');
+  if(prev){const own=owned.has(prev.id),isW=worn[prev.cat]===prev.id;a.classList.remove('off');
+    a.innerHTML=`<b>${prev.name}</b>`+(own?(isW?'<span>Kiyilgan</span>':'<button class="btn" data-a="wear">Kiyish</button>'):(coins>=prev.price?`<button class="btn" data-a="buy">Sotib olish ◎ ${prev.price}</button>`:'<button class="btn" disabled>Tanga yetmaydi</button>'))}
+  else a.classList.add('off');
+  const L=IT.filter(i=>(cat==='all'||i.cat===cat)&&(mode==='market'||owned.has(i.id))&&i.name.toLowerCase().includes(q));
+  const oldHtml=L.length?L.map(i=>{const pv=i.cat==='bg'?`<i class="bgp" style="background:${i.v}"></i>`:i.cat==='ht'?`<span class="em" aria-hidden="true">${EM[i.v]}</span>`:`<i class="dot" style="background:${i.v}"></i>`;
+    const tag=worn[i.cat]===i.id?'<small class="on">Kiyilgan</small>':owned.has(i.id)?'<small>Sizniki</small>':`<small>◎ ${i.price}</small>`;
+    return `<button class="card" data-id="${i.id}" aria-pressed="${!!prev&&prev.id===i.id}">${pv}<span>${i.name}</span>${tag}</button>`}).join(''):`<div class="empty">${mode==='custom'?'Bu yerda hali hech narsa yoʻq. Doʻkondan xarid qiling.':'Hech narsa topilmadi.'}</div>`;
+  $g.innerHTML=gridHtml(L);$('#coins').textContent='◎ '+coins;
+  document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===mode));
+  dress()}
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b){cat=b.dataset.c;prev=null;if(snap===0){snap=2;setSnap()}renderSheet()}});
+$g.addEventListener('click',e=>{if(e.target.closest('[data-see]')){seeAll=!seeAll;renderSheet();return}const b=e.target.closest('.card');if(!b)return;const it=byId[b.dataset.id];prev=prev&&prev.id===it.id?null:it;if(prev&&snap!==1){snap=1;setSnap()}renderSheet()});
+$('#act').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!prev)return;
+  if(b.dataset.a==='buy'&&coins>=prev.price){coins-=prev.price;owned.add(prev.id)}
+  worn[prev.cat]=prev.id;prev=null;save();renderSheet()});
+(()=>{const g=$('#grab'),s=$('#sheet');let y0=null,h0=0,mv=false;
+g.addEventListener('pointerdown',e=>{g.setPointerCapture(e.pointerId);y0=e.clientY;h0=s.getBoundingClientRect().height;mv=false});
+g.addEventListener('pointermove',e=>{if(y0===null)return;const d=y0-e.clientY;if(Math.abs(d)>6)mv=true;if(!mv)return;const H=$('#pg-me').clientHeight;s.classList.add('drag');s.style.height=Math.min(H-56,Math.max(150,h0+d))+'px'});
+const end=()=>{if(y0===null)return;y0=null;s.classList.remove('drag');
+  if(!mv){snap=(snap+1)%3}else{const H=$('#pg-me').clientHeight,h=s.getBoundingClientRect().height,t=[150,H*.5,H-56];snap=t.reduce((b,v,i)=>Math.abs(v-h)<Math.abs(t[b]-h)?i:b,0)}
+  s.style.height='';setSnap()};
+g.addEventListener('pointerup',end);g.addEventListener('pointercancel',end)})();
+document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{mode=b.dataset.m;prev=null;renderSheet()});
+$('#sbtn').onclick=()=>{$('#search').classList.toggle('off');if(!$('#search').classList.contains('off'))$('#q').focus();else{q='';$('#q').value='';renderSheet()}};
+$('#q').addEventListener('input',e=>{q=e.target.value.trim().toLowerCase();renderSheet()});
+/* ---- games ---- */
+function gameCard(g,rank){return `<button class="game" data-g="${g.id}">${rank?`<span class="rk">${rank}</span>`:''}<i class="gt" style="background:${g.g}"></i><div><b>${g.name}</b><small>${rank?(plays[g.id]||0)+' marta oʻynalgan':g.by}</small></div></button>`}
+function renderGames(){
+  $('#pg-home').innerHTML=GAMES.map(g=>gameCard(g)).join('');
+  const s=[...GAMES].sort((a,b)=>(plays[b.id]||0)-(plays[a.id]||0));
+  $('#pg-charts').innerHTML='<div class="hint" style="color:var(--muted);font-size:14px">Reyting shu qurilmadagi oʻynashlar soniga qarab tuziladi.</div>'+s.map((g,i)=>gameCard(g,i+1)).join('')}
+function showGame(id){const g=GAMES.find(x=>x.id===id),p=$('#gpage');
+  p.innerHTML=`<button id="gback" aria-label="Orqaga" style="align-self:flex-start">← Orqaga</button><div id="gban" style="background:${g.g}"></div><h2>${g.name}</h2><p>${g.by}</p><p>${g.d}</p>`+(g.url?`<a class="btn" id="gplay" href="${g.url}">▶ Oʻynash</a>`:'<button class="btn" disabled>Tez orada</button>');
+  p.classList.remove('off');$('#gback').onclick=()=>p.classList.add('off');
+  const pl=$('#gplay');if(pl)pl.addEventListener('click',()=>{plays[id]=(plays[id]||0)+1;coins+=10;save();renderGames();renderSheet()})}
+document.querySelectorAll('.pg').forEach(p=>p.addEventListener('click',e=>{const b=e.target.closest('.game');if(b)showGame(b.dataset.g)}));
+/* ---- nav ---- */
+const MARK='<svg viewBox="0 0 512 512" width="32" height="32" aria-hidden="true"><polygon points="256,140 369,205 256,270 143,205" fill="#8ff0de"/><polygon points="143,205 256,270 256,400 143,335" fill="#3db8a5"/><polygon points="256,270 369,205 369,335 256,400" fill="#2a8a7b"/><polygon points="392,70 434,94 392,118 350,94" fill="#ffd98a"/><polygon points="350,94 392,118 392,166 350,142" fill="#f2b84b"/><polygon points="392,118 434,94 434,142 392,166" fill="#c98f1f"/></svg>';
+function go(p){page=p;prev=null;
+  ['me','home','charts'].forEach(k=>$('#pg-'+k).classList.toggle('off',k!==p));
+  document.querySelectorAll('#nav button').forEach(b=>b.toggleAttribute('aria-current',b.dataset.p===p)||b.removeAttribute('aria-current'));
+  document.querySelectorAll('#nav button').forEach(b=>{if(b.dataset.p===p)b.setAttribute('aria-current','page')});
+  const me=p==='me';$('#seg').classList.toggle('off',!me);$('#sbtn').classList.toggle('off',!me);$('#search').classList.add('off');$('#title').classList.toggle('off',me);
+  $('#title').innerHTML=MARK+'<span>'+(p==='home'?'Oʻyinlar':'Reyting')+'</span>';$('#top').style.background=me?'transparent':'var(--bg)';renderSheet()}
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.p));
+renderGames();go('me');setTimeout(()=>$('#splash').classList.add('hide'),1500);
+</script>
+<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script>
+</body>
+</html>
