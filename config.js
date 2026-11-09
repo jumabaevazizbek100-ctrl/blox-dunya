@@ -1,3 +1,1 @@
-/* Fill these two from Supabase: Project Settings -> API.
-   Use the anon / publishable key ONLY. Never put the service_role key here. */
-window.BLOK_CONFIG={url:'',key:''};
+window.BLOK_CONFIG={url:'https://fzaajvobndceikafqpaq.supabase.co',key:'sb_publishable__fOraQHG3aLexISrjIZ4FA_Yxd4pBiC'};
