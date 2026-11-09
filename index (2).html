@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Blok Dunyo</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#101317">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<style>
+:root{color-scheme:light dark;--bg:#f6f7f9;--surface:#fff;--raised:#eef0f3;--text:#14171c;--muted:#5b6470;--line:#e3e6ea;--accent:#3db8a5;--on-accent:#06231f;--input:#868e98;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#101317;--surface:#1a1f26;--raised:#232a33;--text:#f2f4f7;--muted:#a5afbb;--line:#2e3640;--input:#7a8694}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:16px/24px Inter,Roboto,system-ui,sans-serif;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100%}
+.off{display:none!important}
+button{font:600 15px/22px inherit;font-family:inherit;color:var(--text);background:var(--raised);border:0;border-radius:12px;min-height:48px;min-width:48px;padding:0 14px}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{display:flex;align-items:center;justify-content:center;background:var(--accent);color:var(--on-accent);border-radius:12px;min-height:48px;padding:0 18px;font-weight:700;text-decoration:none;border:0;width:100%;box-sizing:border-box}
+.btn:disabled{opacity:.45}
+#top{display:flex;align-items:center;gap:8px;padding:8px 12px;min-height:56px;box-sizing:border-box;position:relative;z-index:2}
+#title{flex:1;font-weight:700;font-size:20px;display:flex;align-items:center;gap:8px}
+#splash{position:fixed;inset:0;z-index:20;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity 400ms}
+#splash.hide{opacity:0;pointer-events:none}
+#splash svg{width:min(82vw,440px);height:auto}
+.lg-b{fill:var(--text)}.lg-d{fill:var(--accent)}
+#seg{display:flex;flex:1;justify-content:center}
+#seg div{display:flex;background:var(--surface);border-radius:999px;padding:4px;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+#seg button{background:none;border-radius:999px;min-height:40px}
+#seg button[aria-pressed=true]{background:var(--raised)}
+#coins{background:var(--surface);border-radius:999px;padding:4px 12px;font-weight:700;font-size:14px;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+#sbtn{background:var(--surface);border-radius:999px}
+#search{padding:0 12px 8px;position:relative;z-index:2}
+#q{width:100%;box-sizing:border-box;height:44px;border-radius:12px;border:1px solid var(--input);background:var(--surface);color:var(--text);font:inherit;padding:0 12px}
+#pg-me{flex:1;min-height:0;display:flex;flex-direction:column;margin-top:-56px}
+#stage{flex:1;min-height:0;position:relative;background:linear-gradient(160deg,#e6e29a,#e9c6d6 55%,#c9aee0)}
+#stage canvas{display:block;width:100%;height:100%;touch-action:pan-y}
+#msg{position:absolute;inset:0;display:none;align-items:center;justify-content:center;color:#333;padding:24px;text-align:center}
+#sheet{background:var(--surface);border-radius:20px 20px 0 0;box-shadow:0 -8px 24px rgba(0,0,0,.18);display:flex;flex-direction:column;height:150px;overflow:hidden;transition:height 200ms cubic-bezier(.2,.8,.2,1)}
+#sheet.x{height:50%}#sheet.f{height:calc(100% - 56px)}#sheet.drag{transition:none}
+#grab{height:40px;min-height:40px;touch-action:none;width:100%;background:none;border-radius:0;display:flex;align-items:center;justify-content:center}
+#grab i{width:40px;height:4px;border-radius:2px;background:var(--input)}
+#tabs{display:flex;overflow-x:auto;border-bottom:1px solid var(--line)}
+#tabs button{background:none;border-radius:0;color:var(--muted);border-bottom:3px solid transparent;flex:none}
+#tabs button[aria-selected=true]{color:var(--text);border-bottom-color:var(--accent)}
+#act{display:flex;align-items:center;gap:12px;padding:8px 12px;border-bottom:1px solid var(--line)}
+#act b{flex:1}#act .btn{width:auto;flex:none}
+#grid{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:max-content;gap:8px;padding:12px;align-content:start}
+.card{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;background:var(--raised);height:auto;border:2px solid transparent;font-size:13px;min-height:104px}
+.card[aria-pressed=true]{border-color:var(--accent)}
+.card small{color:var(--muted);font-weight:500}.card small.on{color:var(--text);font-weight:700}
+.dot{width:44px;height:44px;border-radius:22px;border:1px solid var(--line);display:block}
+.bgp{width:56px;height:44px;border-radius:10px;display:block;border:1px solid var(--line)}
+.em{font-size:32px;line-height:44px}
+.empty{grid-column:1/-1;color:var(--muted);padding:16px}
+.card{align-items:stretch;text-align:left;background:none;padding:0;gap:3px;min-height:0;border:0;font-size:15px}.card[aria-pressed=true]{border:0}
+.th{width:100%;height:min(calc((100vw - 40px)/3),170px);border-radius:14px;background:var(--raised);display:flex;align-items:center;justify-content:center;border:3px solid transparent;box-sizing:border-box;overflow:hidden}
+.card[aria-pressed=true] .th{border-color:var(--accent)}
+.th .dot{width:68px;height:68px;border-radius:34px}.th .bgp{width:100%;height:100%;border:0;border-radius:0}.th .em{font-size:52px;line-height:1}
+.nm{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
+.cr{color:var(--muted);font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pr{font-weight:700;font-size:15px}.vf{display:inline-block;background:#2f6df5;color:#fff;font-style:normal;font-size:11px;line-height:16px;width:16px;text-align:center;border-radius:4px}
+.sec{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;margin-top:6px}.sec h3{margin:0;font-size:22px}
+.pill{min-height:40px;background:none;border:1.5px solid var(--text);border-radius:8px;font-size:15px;padding:0 12px}
+.pg{flex:1;overflow-y:auto;padding:4px 12px 12px;display:flex;flex-direction:column;gap:10px}
+.game{display:flex;align-items:center;gap:12px;text-align:left;background:var(--surface);height:auto;padding:10px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.gt{width:72px;height:72px;border-radius:14px;flex:none;display:block;overflow:hidden}
+.gt svg,.th2 svg,#gban svg{width:100%;height:100%;display:block}
+#gban{overflow:hidden}
+.me{display:flex;align-items:center;gap:12px;padding:4px 0}.me b{display:block;font-size:20px;line-height:26px}.me small{color:var(--muted);font-size:14px;font-weight:500}
+.avc{width:56px;height:56px;border-radius:28px;overflow:hidden;display:block;flex:none;border:1px solid var(--line)}.avc svg{width:100%;height:100%;display:block}
+.sh{font-size:22px;margin:10px 0 0;line-height:28px}
+.big,.sm{display:flex;flex-direction:column;align-items:stretch;text-align:left;background:none;padding:0;height:auto;gap:2px}
+.big b,.sm b{font-size:17px;margin-top:6px}.big small,.sm small{color:var(--muted);font-weight:500;font-size:14px}
+.th2{display:block;width:100%;border-radius:14px;overflow:hidden}
+.big .th2{height:min(calc((100vw - 24px)*.5625),240px)}.sm .th2{height:min(calc((100vw - 36px)*.28),140px)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.game div{flex:1;display:flex;flex-direction:column}.game small{color:var(--muted);font-weight:500}
+.rk{font-size:20px;font-weight:800;width:28px;text-align:center}
+#gpage{position:absolute;inset:0;background:var(--bg);z-index:5;display:flex;flex-direction:column;gap:12px;padding:12px;box-sizing:border-box;overflow-y:auto;padding-top:calc(12px + env(safe-area-inset-top,0px))}
+#gban{height:180px;border-radius:20px;flex:none}
+#gpage h2{margin:0}#gpage p{margin:0;color:var(--muted)}
+#nav{display:flex;background:var(--surface);border-top:1px solid var(--line)}
+#nav button{flex:1;background:none;border-radius:0;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:56px;font-size:13px;line-height:16px}
+#nav button[aria-current=page]{color:var(--text);box-shadow:inset 0 3px 0 var(--accent)}
+#nav span{font-size:20px;line-height:24px}
+.fa{display:flex;flex-direction:column;gap:10px}.fh{color:var(--muted);font-size:14px;margin:0}
+.fl{font-size:14px;font-weight:600;margin-top:4px}
+.fi{height:48px;box-sizing:border-box;border-radius:12px;border:1px solid var(--input);background:var(--surface);color:var(--text);font:inherit;padding:0 12px;width:100%}
+.fm{min-height:20px;font-size:14px;color:var(--text);font-weight:600}
+.fx{background:none;color:var(--muted);min-height:44px;font-weight:600}
+.fs{font-size:14px;color:var(--muted);margin:10px 0 0;font-weight:600}
+.fr{display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:14px;padding:8px 12px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.fr b{flex:1;overflow:hidden;text-overflow:ellipsis}.fb{display:flex;gap:4px;align-items:center}.fb .btn{width:auto;min-height:40px;padding:0 14px}
+.fadd{display:flex;gap:8px}.fadd .btn{width:auto;flex:none}
+.frow{display:flex;gap:14px;overflow-x:auto;padding:4px 0 10px}
+.fc{display:flex;flex-direction:column;align-items:center;gap:6px;width:80px;flex:none;background:none;padding:0;height:auto;min-height:0;font-size:13px;font-weight:500}
+.fc span:last-child{max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.avb{width:72px;height:72px;border-radius:36px;overflow:hidden;display:block;flex:none;border:1px solid var(--line)}.avb svg{width:100%;height:100%;display:block}
+.avb.plus{display:flex;align-items:center;justify-content:center;font-size:34px;background:var(--raised);color:var(--text);line-height:1;font-weight:300}
+.fsearch{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0 12px;height:48px}
+.fsearch span{color:var(--muted);font-size:20px}.fsearch input{flex:1;border:0;background:none;color:var(--text);font:inherit;outline:0;min-width:0}
+.ftabs{display:flex;border-bottom:1px solid var(--line)}
+.ftabs button{flex:1;background:none;border-radius:0;color:var(--muted);border-bottom:3px solid transparent}
+.ftabs button[aria-selected=true]{color:var(--text);border-bottom-color:var(--text)}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="top">
+    <span id="title" class="off"></span>
+    <div id="seg"><div><button data-m="market" aria-pressed="true">Doʻkon</button><button data-m="custom" aria-pressed="false">Kiyimim</button></div></div>
+    <span id="coins" aria-label="Tangalar"></span>
+    <button id="sbtn" aria-label="Qidirish">⌕</button>
+  </header>
+  <div id="search" class="off"><input id="q" type="search" placeholder="Narsani qidiring" aria-label="Qidirish"></div>
+  <main id="pg-me">
+    <div id="stage"><div id="msg">3D avatar bu qurilmada ishlamadi.</div></div>
+    <section id="sheet">
+      <button id="grab" aria-label="Panelni ochish yoki yopish"><i></i></button>
+      <div id="tabs" role="tablist"></div>
+      <div id="act" class="off"></div>
+      <div id="grid"></div>
+    </section>
+  </main>
+  <main id="pg-home" class="pg off"></main>
+  <main id="pg-charts" class="pg off"></main>
+  <main id="pg-friends" class="pg off"></main>
+  <nav id="nav">
+    <button data-p="home"><span>⌂</span>Bosh</button>
+    <button data-p="charts"><span>▥</span>Reyting</button>
+    <button data-p="friends"><span>☻</span>Doʻstlar</button>
+    <button data-p="me" aria-current="page"><span>☺</span>Men</button>
+  </nav>
+</div>
+<div id="splash" role="img" aria-label="Blok Dunyo"><svg viewBox="0 0 1180 512" aria-hidden="true"><g><polygon points="256,140 369,205 256,270 143,205" fill="#8ff0de"/><polygon points="143,205 256,270 256,400 143,335" fill="#3db8a5"/><polygon points="256,270 369,205 369,335 256,400" fill="#2a8a7b"/><polygon points="392,70 434,94 392,118 350,94" fill="#ffd98a"/><polygon points="350,94 392,118 392,166 350,142" fill="#f2b84b"/><polygon points="392,118 434,94 434,142 392,166" fill="#c98f1f"/><polygon points="120,364 155,384 120,404 85,384" fill="#a9cbff"/><polygon points="85,384 120,404 120,444 85,424" fill="#5c9cf2"/><polygon points="120,404 155,384 155,424 120,444" fill="#3f74c4"/></g><text class="lg-b" x="520" y="318" font-family="Inter,Roboto,Arial,sans-serif" font-size="150" font-weight="800" letter-spacing="2">BLOK</text><text class="lg-d" x="520" y="448" font-family="Inter,Roboto,Arial,sans-serif" font-size="150" font-weight="800" letter-spacing="2">DUNYO</text></svg></div>
+<div id="gpage" class="off"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),KEY='blokdunyo:v1';
+const CATS=[['all','Hammasi'],['skin','Teri'],['sh','Koʻylak'],['pa','Shim'],['bg','Fon'],['ht','Qalpoq']];
+const EM={none:'∅',cap:'🧢',top:'🎩',crown:'👑'};
+const IT=[];const CR=['Blok Dunyo','Ustalar jamoasi','Namuna'];const add=(cat,pre,arr)=>arr.forEach((x,i)=>IT.push({cat,id:pre+i,name:x[0],price:x[1],v:x[2],by:CR[i%3],vf:i%3===1}));
+add('skin','sk',[['Och',0,'#f7e3d0'],['Bugʻdoy',0,'#f1d3b3'],['Qumli',0,'#e8c9a0'],['Qoramtir',0,'#c68e5f'],['Qora',0,'#8d5a3b']]);
+add('sh','sh',[['Feruza',0,'#3db8a5'],['Qizil',0,'#f25c5c'],['Moviy',20,'#5c9cf2'],['Sariq',20,'#f2b84b'],['Binafsha',40,'#a78bfa'],['Qora',40,'#1b1d22'],['Oq',40,'#f2f4f7'],['Yashil',60,'#5cd08a']]);
+add('pa','pa',[['Kulrang',0,'#4a5563'],['Qora',0,'#1b1d22'],['Koʻk',20,'#2f4f9e'],['Xaki',30,'#9a8f6a'],['Oq',30,'#e8eaee'],['Qizil',50,'#a33a3a']]);
+add('bg','bg',[['Sokin',0,'linear-gradient(160deg,#e6e29a,#e9c6d6 55%,#c9aee0)'],['Tong',30,'linear-gradient(180deg,#ffd9a8,#ffb3b3)'],['Okean',40,'linear-gradient(180deg,#a8e6ff,#5c9cf2)'],['Oʻrmon',50,'linear-gradient(180deg,#d6f5d0,#5cb07a)'],['Kecha',60,'linear-gradient(180deg,#2b2f6b,#0f1240)'],['Oddiy',0,'#eef0f3']]);
+add('ht','ht',[['Yoʻq',0,'none'],['Kepka',30,'cap'],['Silindr',60,'top'],['Tojcha',90,'crown']]);
+const byId={};IT.forEach(i=>byId[i.id]=i);
+const GAMES=[
+ {id:'blok',name:'Blok Studiya',by:'Blok Dunyo',d:'Oʻz dunyongni qur: bloklar qoʻy, skript yoz, obby yasab oʻyna.',g:'linear-gradient(135deg,#3db8a5,#5c9cf2)',art:`<svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="s4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd3ff"/><stop offset="1" stop-color="#e4f6ff"/></linearGradient></defs><rect width="320" height="180" fill="url(#s4)"/><ellipse cx="250" cy="34" rx="30" ry="9" fill="#fff" opacity=".8"/><ellipse cx="60" cy="48" rx="24" ry="8" fill="#fff" opacity=".7"/><polygon points="40,112 160,172 160,182 40,122" fill="#dfe3e8"/><polygon points="160,172 280,112 280,122 160,182" fill="#bcc3cc"/><polygon points="160,52 280,112 160,172 40,112" fill="#ffffff"/><polygon points="94,100 120,113 120,135 94,122" fill="#5c9cf2"/><polygon points="120,113 146,100 146,122 120,135" fill="#3f74c4"/><polygon points="120,87 146,100 120,113 94,100" fill="#8bb8ff"/><polygon points="168,92 190,103 190,125 168,114" fill="#f2b84b"/><polygon points="190,103 212,92 212,114 190,125" fill="#c98f1f"/><polygon points="190,81 212,92 190,103 168,92" fill="#ffd98a"/><polygon points="136,128 160,140 160,162 136,150" fill="#3db8a5"/><polygon points="160,140 184,128 184,150 160,162" fill="#2a8a7b"/><polygon points="160,116 184,128 160,140 136,128" fill="#8ff0de"/><polygon points="222,111.0 244,122 222,133.0 200,122" fill="none" stroke="#2b3138" stroke-width="2.5" stroke-dasharray="6 4"/><line x1="222" y1="85.0" x2="222" y2="107.0" stroke="#2b3138" stroke-width="3"/><polygon points="215,99.0 229,99.0 222,109.0" fill="#2b3138"/></svg>`,url:'studiya.html'},
+ {id:'easy',name:'Oson obby',by:'Blok Dunyo',d:'Boshlovchilar uchun obby: checkpointlar va lava. Marraga yet!',g:'linear-gradient(135deg,#6ec6ff,#3db8a5)',art:`<svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="s1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6ec6ff"/><stop offset="1" stop-color="#d9f2ff"/></linearGradient></defs><rect width="320" height="180" fill="url(#s1)"/><ellipse cx="60" cy="30" rx="26" ry="9" fill="#fff" opacity=".8"/><ellipse cx="82" cy="26" rx="18" ry="8" fill="#fff" opacity=".8"/><ellipse cx="270" cy="22" rx="22" ry="8" fill="#fff" opacity=".7"/><rect y="150" width="320" height="30" fill="#f25c5c"/><ellipse cx="40" cy="156" rx="30" ry="4" fill="#ff8a5c"/><ellipse cx="170" cy="162" rx="40" ry="4" fill="#ff8a5c"/><ellipse cx="290" cy="156" rx="28" ry="4" fill="#ff8a5c"/><polygon points="224,62 250,75 250,87 224,74" fill="#f2b84b"/><polygon points="250,75 276,62 276,74 250,87" fill="#c98f1f"/><polygon points="250,49 276,62 250,75 224,62" fill="#ffd98a"/><polygon points="178,80 200,91 200,103 178,92" fill="#5c9cf2"/><polygon points="200,91 222,80 222,92 200,103" fill="#3f74c4"/><polygon points="200,69 222,80 200,91 178,80" fill="#8bb8ff"/><polygon points="128,100 150,111 150,123 128,112" fill="#a78bfa"/><polygon points="150,111 172,100 172,112 150,123" fill="#7c5fd6"/><polygon points="150,89 172,100 150,111 128,100" fill="#c4b0ff"/><polygon points="83,121 105,132 105,144 83,133" fill="#5c9cf2"/><polygon points="105,132 127,121 127,133 105,144" fill="#3f74c4"/><polygon points="105,110 127,121 105,132 83,121" fill="#8bb8ff"/><polygon points="28,143 58,158 58,170 28,155" fill="#3db8a5"/><polygon points="58,158 88,143 88,155 58,170" fill="#2a8a7b"/><polygon points="58,128 88,143 58,158 28,143" fill="#8ff0de"/><line x1="250" y1="62" x2="250" y2="30" stroke="#2b3138" stroke-width="3"/><polygon points="250,30 274,38 250,46" fill="#f25c5c"/></svg>`,url:'studiya.html?level=easy'},
+ {id:'hard',name:'Qiyin obby',by:'Blok Dunyo',d:'Yoʻoqoladigan va harakatlanuvchi platformalar, siljuvchi toʻsiqlar. Tayyormisiz?',g:'linear-gradient(135deg,#3a1f52,#d2527a)',art:`<svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="s5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a1f52"/><stop offset="1" stop-color="#d2527a"/></linearGradient></defs><rect width="320" height="180" fill="url(#s5)"/><circle cx="270" cy="38" r="16" fill="#ffd9a8" opacity=".9"/><rect y="146" width="320" height="34" fill="#ff7a3d"/><ellipse cx="60" cy="156" rx="34" ry="5" fill="#ffb15c"/><ellipse cx="190" cy="165" rx="44" ry="5" fill="#ffb15c"/><ellipse cx="290" cy="156" rx="26" ry="5" fill="#ffb15c"/><polygon points="244,70 262,79 262,89 244,80" fill="#a78bfa"/><polygon points="262,79 280,70 280,80 262,89" fill="#7c5fd6"/><polygon points="262,61 280,70 262,79 244,70" fill="#c4b0ff"/><polygon points="187,90 205,99 205,109 187,100" fill="#5c9cf2"/><polygon points="205,99 223,90 223,100 205,109" fill="#3f74c4"/><polygon points="205,81 223,90 205,99 187,90" fill="#8bb8ff"/><polygon points="128,106 150,117 150,127 128,116" fill="#a78bfa"/><polygon points="150,117 172,106 172,116 150,127" fill="#7c5fd6"/><polygon points="150,95 172,106 150,117 128,106" fill="#c4b0ff"/><polygon points="74,122 92,131 92,141 74,132" fill="#a78bfa"/><polygon points="92,131 110,122 110,132 92,141" fill="#7c5fd6"/><polygon points="92,113 110,122 92,131 74,122" fill="#c4b0ff"/><polygon points="18,140 44,153 44,163 18,150" fill="#3db8a5"/><polygon points="44,153 70,140 70,150 44,163" fill="#2a8a7b"/><polygon points="44,127 70,140 44,153 18,140" fill="#8ff0de"/><polygon points="141,92 150,96 150,122 141,118" fill="#f25c5c"/><polygon points="150,96 159,92 159,118 150,122" fill="#c23d3d"/><polygon points="150,88 159,92 150,96 141,92" fill="#ff9a9a"/></svg>`,url:'studiya.html?level=hard'},
+ {id:'obby',name:'Sakrash minorasi',by:'Blok Dunyo',d:'Spiral boʻylab tepaga chiq. Pastga tushsang lavaga tushasan!',g:'linear-gradient(135deg,#f2b84b,#f25c5c)',art:`<svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="s2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd28a"/><stop offset="1" stop-color="#ffb0a0"/></linearGradient></defs><rect width="320" height="180" fill="url(#s2)"/><polygon points="102,136 154,162 154,178 102,152" fill="#5c9cf2"/><polygon points="154,162 206,136 206,152 154,178" fill="#3f74c4"/><polygon points="154,110 206,136 154,162 102,136" fill="#8bb8ff"/><polygon points="119,118 166,142 166,158 119,134" fill="#3db8a5"/><polygon points="166,142 213,118 213,134 166,158" fill="#2a8a7b"/><polygon points="166,94 213,118 166,142 119,118" fill="#8ff0de"/><polygon points="112,100 154,121 154,137 112,116" fill="#f2b84b"/><polygon points="154,121 196,100 196,116 154,137" fill="#c98f1f"/><polygon points="154,79 196,100 154,121 112,100" fill="#ffd98a"/><polygon points="129,82 166,100 166,116 129,98" fill="#a78bfa"/><polygon points="166,100 203,82 203,98 166,116" fill="#7c5fd6"/><polygon points="166,64 203,82 166,100 129,82" fill="#c4b0ff"/><polygon points="122,64 154,80 154,96 122,80" fill="#f25c5c"/><polygon points="154,80 186,64 186,80 154,96" fill="#c23d3d"/><polygon points="154,48 186,64 154,80 122,64" fill="#ff9a9a"/><polygon points="139,46 166,60 166,76 139,62" fill="#3db8a5"/><polygon points="166,60 193,46 193,62 166,76" fill="#2a8a7b"/><polygon points="166,32 193,46 166,60 139,46" fill="#8ff0de"/><polygon points="132,28 154,39 154,55 132,44" fill="#ff9248"/><polygon points="154,39 176,28 176,44 154,55" fill="#d4702a"/><polygon points="154,17 176,28 154,39 132,28" fill="#ffc08a"/></svg>`,url:'studiya.html?level=tower'},
+ {id:'race',name:'Blok poygasi',by:'Blok Dunyo',d:'Vaqtga qarshi poyga: eng yaxshi vaqtingni yangila.',g:'linear-gradient(135deg,#a78bfa,#5c9cf2)',art:`<svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="s3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9b6ff"/><stop offset="1" stop-color="#8fb4ff"/></linearGradient></defs><rect width="320" height="180" fill="url(#s3)"/><circle cx="270" cy="34" r="14" fill="#fff" opacity=".7"/><circle cx="46" cy="40" r="3" fill="#fff"/><circle cx="110" cy="22" r="2" fill="#fff"/><circle cx="210" cy="48" r="2" fill="#fff"/><polygon points="276,44 300,56 300,62 276,50" fill="#dfe3e8"/><polygon points="300,56 324,44 324,50 300,62" fill="#bcc3cc"/><polygon points="300,32 324,44 300,56 276,44" fill="#ffffff"/><polygon points="246,56 270,68 270,74 246,62" fill="#c0c6ce"/><polygon points="270,68 294,56 294,62 270,74" fill="#9ea6b1"/><polygon points="270,44 294,56 270,68 246,56" fill="#e3e6ea"/><polygon points="216,68 240,80 240,86 216,74" fill="#dfe3e8"/><polygon points="240,80 264,68 264,74 240,86" fill="#bcc3cc"/><polygon points="240,56 264,68 240,80 216,68" fill="#ffffff"/><polygon points="186,80 210,92 210,98 186,86" fill="#c0c6ce"/><polygon points="210,92 234,80 234,86 210,98" fill="#9ea6b1"/><polygon points="210,68 234,80 210,92 186,80" fill="#e3e6ea"/><polygon points="156,92 180,104 180,110 156,98" fill="#dfe3e8"/><polygon points="180,104 204,92 204,98 180,110" fill="#bcc3cc"/><polygon points="180,80 204,92 180,104 156,92" fill="#ffffff"/><polygon points="126,104 150,116 150,122 126,110" fill="#c0c6ce"/><polygon points="150,116 174,104 174,110 150,122" fill="#9ea6b1"/><polygon points="150,92 174,104 150,116 126,104" fill="#e3e6ea"/><polygon points="96,116 120,128 120,134 96,122" fill="#dfe3e8"/><polygon points="120,128 144,116 144,122 120,134" fill="#bcc3cc"/><polygon points="120,104 144,116 120,128 96,116" fill="#ffffff"/><polygon points="66,128 90,140 90,146 66,134" fill="#c0c6ce"/><polygon points="90,140 114,128 114,134 90,146" fill="#9ea6b1"/><polygon points="90,116 114,128 90,140 66,128" fill="#e3e6ea"/><polygon points="36,140 60,152 60,158 36,146" fill="#dfe3e8"/><polygon points="60,152 84,140 84,146 60,158" fill="#bcc3cc"/><polygon points="60,128 84,140 60,152 36,140" fill="#ffffff"/><polygon points="6,152 30,164 30,170 6,158" fill="#c0c6ce"/><polygon points="30,164 54,152 54,158 30,170" fill="#9ea6b1"/><polygon points="30,140 54,152 30,164 6,152" fill="#e3e6ea"/><polygon points="136,101 150,108 150,122 136,115" fill="#3db8a5"/><polygon points="150,108 164,101 164,115 150,122" fill="#2a8a7b"/><polygon points="150,94 164,101 150,108 136,101" fill="#8ff0de"/></svg>`,url:'studiya.html?level=race'}];
+let owned=new Set(IT.filter(i=>i.price===0).map(i=>i.id)),worn={skin:'sk2',sh:'sh0',pa:'pa0',bg:'bg0',ht:'ht0'},coins=300,plays={};
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s){owned=new Set(s.owned);worn=Object.assign(worn,s.worn);coins=s.coins;plays=s.plays||{}}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({owned:[...owned],worn,coins,plays}))}catch(e){}}
+let mode='market',cat='all',q='',prev=null,page='me',snap=0;
+/* ---- 3D avatar ---- */
+const stage=$('#stage');let R,scene,camera,av,AM={},hats={},arms=[];
+const D=Math.PI/180;
+try{
+  R=new THREE.WebGLRenderer({antialias:true,alpha:true});R.setPixelRatio(Math.min(devicePixelRatio,2));stage.insertBefore(R.domElement,stage.firstChild);
+  scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(35,1,.1,50);
+  scene.add(new THREE.HemisphereLight(0xffffff,0x8a8a99,1));const dl=new THREE.DirectionalLight(0xffffff,.7);dl.position.set(3,6,5);scene.add(dl);
+  av=new THREE.Group();scene.add(av);['skin','shirt','pants'].forEach(k=>AM[k]=new THREE.MeshStandardMaterial({color:0xcccccc}));
+  const box=(w,h,d,k,y)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),AM[k]);m.position.y=y;return m};
+  const limb=(w,h,d,k,x,y)=>{const g=new THREE.Group();g.position.set(x,y,0);g.add(box(w,h,d,k,-h/2));av.add(g);return g};
+  av.add(box(.8,.9,.4,'shirt',1.2),box(.55,.45,.5,'skin',1.85));
+  const fm=new THREE.MeshBasicMaterial({color:0x222222});[-.12,.12].forEach(x=>{const e=new THREE.Mesh(new THREE.BoxGeometry(.07,.09,.02),fm);e.position.set(x,1.9,.26);av.add(e)});
+  const sm=new THREE.Mesh(new THREE.BoxGeometry(.22,.04,.02),fm);sm.position.set(0,1.76,.26);av.add(sm);
+  arms=[limb(.25,.85,.25,'shirt',-.55,1.65),limb(.25,.85,.25,'shirt',.55,1.65)];limb(.35,.75,.35,'pants',-.2,.75);limb(.35,.75,.35,'pants',.2,.75);
+  const hm=c=>new THREE.MeshStandardMaterial({color:c}),hg=()=>{const g=new THREE.Group();g.position.y=2.075;g.visible=false;av.add(g);return g};
+  hats.cap=hg();let m=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.14,20),hm(0xf25c5c));m.position.y=.07;hats.cap.add(m);m=new THREE.Mesh(new THREE.BoxGeometry(.5,.04,.3),hm(0xf25c5c));m.position.set(0,.02,.32);hats.cap.add(m);
+  hats.top=hg();m=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,.42,20),hm(0x1b1d22));m.position.y=.21;hats.top.add(m);m=new THREE.Mesh(new THREE.CylinderGeometry(.4,.4,.04,20),hm(0x1b1d22));m.position.y=.02;hats.top.add(m);
+  hats.crown=hg();m=new THREE.Mesh(new THREE.ConeGeometry(.32,.32,5),hm(0xf2b84b));m.position.y=.16;hats.crown.add(m);
+  const fit=()=>{const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;R.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
+    const t=Math.tan(17.5*D),d=Math.max(1.55/t,1.1/(t*camera.aspect))+.8;camera.position.set(0,1.15,d);camera.lookAt(0,1.1,0)};
+  new ResizeObserver(fit).observe(stage);
+}catch(e){R=null;$('#msg').style.display='flex'}
+const eff=c=>byId[prev&&prev.cat===c?prev.id:worn[c]];
+function dress(){stage.style.background=eff('bg').v;if(!R)return;AM.skin.color.set(eff('skin').v);AM.shirt.color.set(eff('sh').v);AM.pants.color.set(eff('pa').v);const h=eff('ht').v;for(const k in hats)hats[k].visible=h===k}
+let ry=.35,last=0;
+(function loop(t){if(R&&page==='me'){av.rotation.y=ry+Math.sin(t/1500)*.08;arms[0].rotation.x=Math.sin(t/900)*.06;arms[1].rotation.x=-Math.sin(t/900)*.06;R.render(scene,camera)}requestAnimationFrame(loop)})(0);
+let dx0=null;stage.addEventListener('pointerdown',e=>{if(e.target.tagName==='CANVAS'){dx0=e.clientX;stage.setPointerCapture(e.pointerId)}});
+stage.addEventListener('pointermove',e=>{if(dx0!==null){ry+=(e.clientX-dx0)*.012;dx0=e.clientX}});
+const endD=()=>{dx0=null};stage.addEventListener('pointerup',endD);stage.addEventListener('pointercancel',endD);
+/* ---- shop ---- */
+const $g=$('#grid');let seeAll=false;
+function setSnap(){const s=$('#sheet');s.classList.toggle('x',snap===1);s.classList.toggle('f',snap===2)}
+function card(i){const pv=i.cat==='bg'?`<i class="bgp" style="background:${i.v}"></i>`:i.cat==='ht'?`<span class="em" aria-hidden="true">${EM[i.v]}</span>`:`<i class="dot" style="background:${i.v}"></i>`;
+  const pr=worn[i.cat]===i.id?'<span class="pr">Kiyilgan</span>':owned.has(i.id)?'<span class="pr" style="color:var(--muted)">Sizniki</span>':`<span class="pr">◎ ${i.price}</span>`;
+  return `<button class="card" data-id="${i.id}" aria-pressed="${!!prev&&prev.id===i.id}"><span class="th">${pv}</span><b class="nm">${i.name}</b><span class="cr">${i.by}${i.vf?' <i class="vf" role="img" aria-label="tasdiqlangan">✓</i>':''}</span>${pr}</button>`}
+function gridHtml(L){if(!L.length)return `<div class="empty">${mode==='custom'?'Bu yerda hali hech narsa yoʻq. Doʻkondan xarid qiling.':'Hech narsa topilmadi.'}</div>`;
+  if(cat!=='all'||q)return L.map(card).join('');
+  const m=[...L].sort((x,y)=>parseInt(x.id.replace(/\D/g,''))-parseInt(y.id.replace(/\D/g,''))),a=m.slice(0,6),b=m.slice(6);
+  return `<div class="sec"><h3>${mode==='market'?'Sizga tavsiya':'Kiyimlarim'}</h3></div>`+a.map(card).join('')+(b.length?`<div class="sec"><h3>Uslublarni koʻring</h3><button class="pill" data-see="1">${seeAll?'Yashirish':'Hammasi'}</button></div>`+(seeAll?b:b.slice(0,3)).map(card).join(''):'')}
+function renderSheet(){
+  $('#tabs').innerHTML=CATS.map(c=>`<button role="tab" data-c="${c[0]}" aria-selected="${cat===c[0]}">${c[1]}</button>`).join('');
+  const a=$('#act');
+  if(prev){const own=owned.has(prev.id),isW=worn[prev.cat]===prev.id;a.classList.remove('off');
+    a.innerHTML=`<b>${prev.name}</b>`+(own?(isW?'<span>Kiyilgan</span>':'<button class="btn" data-a="wear">Kiyish</button>'):(coins>=prev.price?`<button class="btn" data-a="buy">Sotib olish ◎ ${prev.price}</button>`:'<button class="btn" disabled>Tanga yetmaydi</button>'))}
+  else a.classList.add('off');
+  const L=IT.filter(i=>(cat==='all'||i.cat===cat)&&(mode==='market'||owned.has(i.id))&&i.name.toLowerCase().includes(q));
+  const oldHtml=L.length?L.map(i=>{const pv=i.cat==='bg'?`<i class="bgp" style="background:${i.v}"></i>`:i.cat==='ht'?`<span class="em" aria-hidden="true">${EM[i.v]}</span>`:`<i class="dot" style="background:${i.v}"></i>`;
+    const tag=worn[i.cat]===i.id?'<small class="on">Kiyilgan</small>':owned.has(i.id)?'<small>Sizniki</small>':`<small>◎ ${i.price}</small>`;
+    return `<button class="card" data-id="${i.id}" aria-pressed="${!!prev&&prev.id===i.id}">${pv}<span>${i.name}</span>${tag}</button>`}).join(''):`<div class="empty">${mode==='custom'?'Bu yerda hali hech narsa yoʻq. Doʻkondan xarid qiling.':'Hech narsa topilmadi.'}</div>`;
+  $g.innerHTML=gridHtml(L);$('#coins').textContent='◎ '+coins;
+  document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===mode));
+  dress()}
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b){cat=b.dataset.c;prev=null;if(snap===0){snap=2;setSnap()}renderSheet()}});
+$g.addEventListener('click',e=>{if(e.target.closest('[data-see]')){seeAll=!seeAll;renderSheet();return}const b=e.target.closest('.card');if(!b)return;const it=byId[b.dataset.id];prev=prev&&prev.id===it.id?null:it;if(prev&&snap!==1){snap=1;setSnap()}renderSheet()});
+$('#act').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!prev)return;
+  if(b.dataset.a==='buy'&&coins>=prev.price){coins-=prev.price;owned.add(prev.id)}
+  worn[prev.cat]=prev.id;prev=null;save();renderSheet()});
+(()=>{const g=$('#grab'),s=$('#sheet');let y0=null,h0=0,mv=false;
+g.addEventListener('pointerdown',e=>{g.setPointerCapture(e.pointerId);y0=e.clientY;h0=s.getBoundingClientRect().height;mv=false});
+g.addEventListener('pointermove',e=>{if(y0===null)return;const d=y0-e.clientY;if(Math.abs(d)>6)mv=true;if(!mv)return;const H=$('#pg-me').clientHeight;s.classList.add('drag');s.style.height=Math.min(H-56,Math.max(150,h0+d))+'px'});
+const end=()=>{if(y0===null)return;y0=null;s.classList.remove('drag');
+  if(!mv){snap=(snap+1)%3}else{const H=$('#pg-me').clientHeight,h=s.getBoundingClientRect().height,t=[150,H*.5,H-56];snap=t.reduce((b,v,i)=>Math.abs(v-h)<Math.abs(t[b]-h)?i:b,0)}
+  s.style.height='';setSnap()};
+g.addEventListener('pointerup',end);g.addEventListener('pointercancel',end)})();
+document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{mode=b.dataset.m;prev=null;renderSheet()});
+$('#sbtn').onclick=()=>{$('#search').classList.toggle('off');if(!$('#search').classList.contains('off'))$('#q').focus();else{q='';$('#q').value='';renderSheet()}};
+$('#q').addEventListener('input',e=>{q=e.target.value.trim().toLowerCase();renderSheet()});
+/* ---- games ---- */
+function gameCard(g,rank){return `<button class="game" data-g="${g.id}">${rank?`<span class="rk">${rank}</span>`:''}<span class="gt">${g.art}</span><div><b>${g.name}</b><small>${rank?(plays[g.id]||0)+' marta oʻynalgan':g.by}</small></div></button>`}
+function renderHome(){renderHome0();if(window.fillFriendsRow)window.fillFriendsRow()}
+function renderHome0(){const f=GAMES[0],rest=GAMES.slice(1),pl=g=>(plays[g.id]||0)+' marta o\u02bbynalgan';
+  $('#pg-home').innerHTML=`<div class="me"><span class="avc" style="background:${byId[worn.bg].v}"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="12" y="23" width="16" height="15" rx="2" fill="${byId[worn.sh].v}"/><rect x="13" y="7" width="14" height="14" rx="3" fill="${byId[worn.skin].v}"/></svg></span><div><b>Xush kelibsiz!</b><small>\u25ce ${coins} tanga</small></div></div><div id="frow" class="frow"></div><h2 class="sh">Sizga tavsiya</h2><button class="big" data-g="${f.id}"><span class="th2">${f.art}</span><b>${f.name}</b><small>${pl(f)}</small></button><h2 class="sh">Yangi o\u02bbyinlar</h2><div class="two">${rest.map(g=>`<button class="sm" data-g="${g.id}"><span class="th2">${g.art}</span><b>${g.name}</b><small>${g.by}</small></button>`).join('')}</div>`}
+function renderGames(){
+  renderHome();
+  const s=[...GAMES].sort((a,b)=>(plays[b.id]||0)-(plays[a.id]||0));
+  $('#pg-charts').innerHTML='<div class="hint" style="color:var(--muted);font-size:14px">Reyting shu qurilmadagi oʻynashlar soniga qarab tuziladi.</div>'+s.map((g,i)=>gameCard(g,i+1)).join('')}
+function showGame(id){const g=GAMES.find(x=>x.id===id),p=$('#gpage');
+  p.innerHTML=`<button id="gback" aria-label="Orqaga" style="align-self:flex-start">← Orqaga</button><div id="gban">${g.art}</div><h2>${g.name}</h2><p>${g.by}</p><p>${g.d}</p>`+(g.url?`<a class="btn" id="gplay" href="${g.url}">▶ Oʻynash</a>`:'<button class="btn" disabled>Tez orada</button>');
+  p.classList.remove('off');$('#gback').onclick=()=>p.classList.add('off');
+  const pl=$('#gplay');if(pl)pl.addEventListener('click',()=>{plays[id]=(plays[id]||0)+1;coins+=10;save();renderGames();renderSheet()})}
+document.querySelectorAll('.pg').forEach(p=>p.addEventListener('click',e=>{const b=e.target.closest('.game,.big,.sm');if(b)showGame(b.dataset.g)}));
+/* ---- nav ---- */
+const MARK='<svg viewBox="0 0 512 512" width="32" height="32" aria-hidden="true"><polygon points="256,140 369,205 256,270 143,205" fill="#8ff0de"/><polygon points="143,205 256,270 256,400 143,335" fill="#3db8a5"/><polygon points="256,270 369,205 369,335 256,400" fill="#2a8a7b"/><polygon points="392,70 434,94 392,118 350,94" fill="#ffd98a"/><polygon points="350,94 392,118 392,166 350,142" fill="#f2b84b"/><polygon points="392,118 434,94 434,142 392,166" fill="#c98f1f"/></svg>';
+function go(p){page=p;prev=null;if(p==='home')renderHome();if(p==='friends'&&window.renderFriends)window.renderFriends();
+  ['me','home','charts','friends'].forEach(k=>$('#pg-'+k).classList.toggle('off',k!==p));
+  document.querySelectorAll('#nav button').forEach(b=>b.toggleAttribute('aria-current',b.dataset.p===p)||b.removeAttribute('aria-current'));
+  document.querySelectorAll('#nav button').forEach(b=>{if(b.dataset.p===p)b.setAttribute('aria-current','page')});
+  const me=p==='me';$('#seg').classList.toggle('off',!me);$('#sbtn').classList.toggle('off',!me);$('#search').classList.add('off');$('#title').classList.toggle('off',me);
+  $('#title').innerHTML=MARK+'<span>'+(p==='home'?'Blok Dunyo':p==='friends'?'Doʻstlar':'Reyting')+'</span>';$('#top').style.background=me?'transparent':'var(--bg)';renderSheet()}
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.p));
+renderGames();go('me');setTimeout(()=>$('#splash').classList.add('hide'),1500);
+</script>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+<script src="friends.js"></script>
+<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script>
+</body>
+</html>

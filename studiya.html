@@ -39,11 +39,15 @@ body.play .ed{display:none}
 .row input[type=text]{width:100%}
 .row input[type=color]{width:100px;padding:2px}
 .row select{width:120px;height:44px;background:var(--bg);color:var(--text);border:1px solid var(--input);border-radius:var(--md);font:inherit;font-size:14px}
+#hud{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:rgba(26,31,38,.85);color:var(--text);font-weight:700;padding:6px 14px;border-radius:12px;display:none;z-index:3;font-variant-numeric:tabular-nums}
+body.play #hud{display:block}
+#back{display:none;align-items:center;min-height:48px;padding:0 14px;border-radius:10px;background:var(--raised);color:var(--text);font-weight:600;text-decoration:none;white-space:nowrap}
+body.lvl #back{display:flex}body.lvl .ed{display:none!important}body.lvl .win{display:none!important}
 h3{font-size:12px;color:var(--muted);margin:8px 0 0;font-weight:500}
 .empty,.hint{color:var(--muted);padding:8px 4px;font-size:14px}
 textarea{width:100%;box-sizing:border-box;height:calc(100% - 56px);min-height:80px;background:var(--bg);color:var(--text);border:1px solid var(--input);border-radius:var(--md);font:14px/20px ui-monospace,Menlo,monospace;padding:8px;touch-action:auto;resize:none}
 #err{color:var(--danger);font-size:13px;min-height:16px}
-#toast{position:absolute;top:16px;left:50%;transform:translateX(-50%);background:var(--accent);color:var(--on-accent);font-weight:700;padding:10px 18px;border-radius:12px;display:none;z-index:3}
+#toast{position:absolute;top:60px;left:50%;transform:translateX(-50%);background:var(--accent);color:var(--on-accent);font-weight:700;padding:10px 18px;border-radius:12px;display:none;z-index:3}
 #pctl{display:none}
 body.play #pctl{display:block}
 #joy{position:absolute;left:20px;bottom:24px;width:120px;height:120px;border-radius:60px;background:rgba(242,244,247,.12);border:2px solid var(--input);touch-action:none}
@@ -56,6 +60,7 @@ body.play #pctl{display:block}
 <div id="app">
   <div id="bar" role="toolbar" aria-label="Asboblar">
     <button id="play" class="p">▶ Oʻynash</button>
+    <a id="back" href="index.html">← Blok Dunyo</a>
     <button class="ed" id="obby">Namuna obby yuklash</button>
     <button class="ed" id="obby2">Qiyin obby yuklash</button>
     <button class="ed tool" data-tool="select">Tanlash</button>
@@ -79,6 +84,7 @@ body.play #pctl{display:block}
     <div class="win" id="w-props" style="right:8px;top:8px;width:52%;max-height:calc(100% - 16px)"><div class="wh"><b>Xususiyatlar</b><button data-close="props" aria-label="Yopish">✕</button></div><div class="wb" id="b-props"></div></div>
     <div class="win" id="w-script" style="left:8px;right:8px;bottom:8px;height:44%"><div class="wh"><b>Skript</b><button data-close="script" aria-label="Yopish">✕</button></div><div class="wb"><div class="hint">Oʻynash paytida har kadrda ishlaydi. part.x .y .z .rx .ry .rz .w .h .d .color, dt, time</div><textarea id="code" spellcheck="false" aria-label="Skript matni"></textarea><div id="err"></div></div></div>
     <div class="win" id="w-avatar" style="left:8px;bottom:8px;width:56%"><div class="wh"><b>Avatar</b><button data-close="avatar" aria-label="Yopish">✕</button></div><div class="wb"><div class="row"><span>Teri</span><input type="color" data-av="skin" aria-label="Teri rangi"></div><div class="row"><span>Koʻylak</span><input type="color" data-av="shirt" aria-label="Koʻylak rangi"></div><div class="row"><span>Shim</span><input type="color" data-av="pants" aria-label="Shim rangi"></div></div></div>
+    <div id="hud" aria-live="off"></div>
     <div id="toast" role="status"></div>
     <div id="pctl"><div id="joy" aria-label="Harakat"><div id="thumb"></div></div><button id="rotL" aria-label="Kamerani chapga burish">↺</button><button id="rotR" aria-label="Kamerani oʻngga burish">↻</button><button id="jump">Sakra</button></div>
   </div>
@@ -92,7 +98,7 @@ const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&'
 const cur=()=>items.find(i=>i.id===sel);
 function load(){for(const k of [KEY,'blokstudiya:v1']){try{const s=JSON.parse(localStorage.getItem(k)||'null');if(s&&Array.isArray(s.items)){items=s.items;seq=s.seq||items.length+1;items.forEach(i=>{i.rot=i.rot||[0,0,0];i.script=i.script||''});return}}catch(e){}}
   items=[{id:1,name:'Blok 1',shape:'box',pos:[0,1,0],size:[4,2,4],rot:[0,0,0],color:'#3db8a5',script:''}];seq=2}
-function save(){try{localStorage.setItem(KEY,JSON.stringify({items,seq}))}catch(e){}}
+function save(){if(window.levelMode)return;try{localStorage.setItem(KEY,JSON.stringify({items,seq}))}catch(e){}}
 function edit(fn){undo.push(JSON.stringify(items));if(undo.length>100)undo.shift();redo=[];fn();save();refresh()}
 function swap(from,to){if(!from.length)return;to.push(JSON.stringify(items));items=JSON.parse(from.pop());if(!cur())sel=null;save();refresh()}
 function add(shape){edit(()=>{const id=seq++,n={box:'Blok',sphere:'Shar',cylinder:'Silindr'}[shape];
@@ -150,7 +156,7 @@ function play(){ph=1;rad=18;const s0=items.find(i=>i.name==='Boshlanish');cp=s0?
   items.forEach(it=>{if(!it.script.trim())return;try{sc[it.id]={f:new Function('part','dt','time',it.script),p:proxy(it),it}}catch(e){scriptErr[it.id]=e.message}});
   pl={x:cp?cp[0]:0,y:cp?cp[1]:0,z:cp?cp[2]:9,vy:0,g:false};if(pmesh)pmesh.visible=true;document.body.classList.add('play');refresh()}
 function stop(){toastMsg('');thT=null;playing=false;items=JSON.parse(snapJson);if(pmesh)pmesh.visible=false;document.body.classList.remove('play');joy={x:0,y:0};refresh()}
-function step(dt){simT+=dt;
+function step(dt){simT+=dt;if(!won)window.hudT=simT;$('#hud').textContent='\u23f1 '+(window.hudT||0).toFixed(1)+' s';
   if(thT!==null){let d=thT-th;d=Math.atan2(Math.sin(d),Math.cos(d));th+=d*Math.min(1,dt*6)}
   const before=[];for(const id in sc){const s=sc[id];if(s)before.push([s.it,s.it.pos[0],s.it.pos[1],s.it.pos[2]])}
   for(const id in sc){const s=sc[id];if(!s)continue;try{s.f(s.p,dt,simT)}catch(e){scriptErr[id]=e.message;sc[id]=null}}
@@ -175,7 +181,7 @@ function step(dt){simT+=dt;
     if(Math.abs(pl.x-i.pos[0])<i.size[0]/2+.5&&Math.abs(pl.z-i.pos[2])<i.size[2]/2+.5&&pl.y<i.pos[1]+i.size[1]/2+.15&&pl.y+2>i.pos[1]-i.size[1]/2){
       if(i.kind==='kill'){spawn();break}
       if(i.kind==='check'){const n=[i.pos[0],i.pos[1]+i.size[1]/2,i.pos[2]];if(!cp||n.join()!==cp.join()){toastMsg('Checkpoint!');for(let j=items.indexOf(i)+1;j<items.length;j++){if(items[j].kind!=='kill'){aimAt(i,items[j]);break}}}cp=n}
-      if(i.kind==='win'&&!won){won=true;toastMsg('Gʻalaba!')}}}}
+      if(i.kind==='win'&&!won){won=true;const t=simT;let note='';if(window.levelName){const k='blokstudiya:best:'+window.levelName;let b=NaN;try{b=parseFloat(localStorage.getItem(k))}catch(e){}if(!(b>0)||t<b){try{localStorage.setItem(k,String(t))}catch(e){}note=' \u2022 yangi rekord!'}else note=' \u2022 rekord '+b.toFixed(1)+' s'}toastMsg('G\u02bbalaba! '+t.toFixed(1)+' s'+note)}}}}
 let last=performance.now();
 (function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;
   if(R){if(playing){step(dt);pmesh.position.set(pl.x,pl.y,pl.z);pmesh.rotation.y=pl.face||0;{const w=pl.mv&&pl.g?Math.sin(simT*10)*.8:0,L=pmesh.userData.l;L[0].rotation.x=w;L[1].rotation.x=-w;L[2].rotation.x=-w;L[3].rotation.x=w}tgt.x=pl.x;tgt.y=pl.y+1.2;tgt.z=pl.z;sync3d()}updGizmo();cam();R.render(scene,camera)}
@@ -226,7 +232,7 @@ function renderScript(){const it=cur(),c=$('#code');c.disabled=!it;c.value=it?it
 function refresh(){
   document.querySelectorAll('.tool').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tool===tool));
   document.querySelectorAll('[data-win]').forEach(b=>b.setAttribute('aria-pressed',!!win[b.dataset.win]));
-  $('#play').textContent=playing?'■ Toʻxtatish':'▶ Oʻynash';
+  $('#play').textContent=playing?(window.levelMode?'\u21bb Qayta boshlash':'\u25a0 To\u02bbxtatish'):'\u25b6 O\u02bbynash';
   $('#undo').disabled=!undo.length;$('#redo').disabled=!redo.length;$('#del').disabled=!sel;
   for(const k in win)$('#w-'+k).style.display=win[k]&&!playing?'flex':'none';
   renderTree();renderProps();renderScript();sync3d()}
@@ -267,9 +273,41 @@ function buildHard(){
   P(2,4,2.5,2.5,.5);P(2,4,6,3,0,{bar:1,off:2});P(2,4.2,2.5,2,.5,{off:-3.5});P(2,4,4,4,.5,{kind:'win'});
   L.push({id:++id,name:'Lava',shape:'box',pos:[0,.2,0],size:[60,.4,60],rot:[0,0,0],color:'#f25c5c',script:'',kind:'kill'});
   return L}
+function buildRace(){
+  const L=[];let id=0;
+  const U=[[0,-1],[1,0],[0,1],[-1,0]];
+  const mk=(x,top,z,sx,sz,kind,color,script,name)=>{const it={id:++id,name,shape:'box',pos:[x,top-.5,z],size:[sx,1,sz],rot:[0,0,0],color,script:script||'',kind:kind||'normal'};L.push(it);return it};
+  let cx=0,cz=3,top=1,ex=4,ez=4,n=0;
+  mk(cx,top,cz,ex,ez,'check','#5cd08a','','Boshlanish');
+  const P=(d,g,l,w,r,o)=>{o=o||{};const u=U[d],ext=u[0]?ex:ez,sx=u[0]?l:w,sz=u[0]?w:l;
+    let nx=cx+u[0]*(ext/2+g+l/2),nz=cz+u[1]*(ext/2+g+l/2);
+    if(o.off){if(u[0])nz+=o.off;else nx+=o.off}
+    top+=r;n++;const kind=o.kind||'normal';
+    let col=kind==='check'?'#5cd08a':kind==='win'?'#f2b84b':'#5c9cf2',sc='',nm='Platforma '+n;
+    if(o.sc==='vanish'){sc='part.y=((time+'+(o.ph||0)+')%3<2)?'+(top-.5)+':-40';col='#a78bfa';nm='Yoʻqoladigan '+n}
+    if(o.sc==='move'){sc='part.'+(u[0]?'x':'z')+'='+(u[0]?nx:nz)+'+Math.sin(time)*2.5';col='#5ce1e6';nm='Harakatlanuvchi '+n}
+    if(kind==='check')nm='Checkpoint '+n;if(kind==='win')nm='Marra';
+    const it=mk(nx,top,nz,sx,sz,kind,col,sc,nm);
+    if(o.bar){const ax=u[0]?'x':'z';const b=u[0]?mk(nx,top+1,nz,1,w,'kill','#f25c5c','part.x='+nx+'+Math.sin(time*1.6)*'+(l/2-.9),'Toʻsiq'):mk(nx,top+1,nz,w,1,'kill','#f25c5c','part.z='+nz+'+Math.sin(time*1.6)*'+(l/2-.9),'Toʻsiq')}
+    cx=nx;cz=nz;ex=sx;ez=sz;return it};
+  P(0,3,5,4,0,{bar:1});P(0,3.5,3,3,0);P(0,3.5,4,3,0,{bar:1});P(0,3.5,3,2.5,0,{sc:'vanish',ph:0});
+  P(1,3.5,4,4,0,{kind:'check'});P(1,3.5,3,3,0);P(1,4,2.5,2.5,0,{off:-1.5,sc:'vanish',ph:1});P(1,3.5,4,4,0,{kind:'win'});
+  L.push({id:++id,name:'Lava',shape:'box',pos:[0,.2,0],size:[60,.4,60],rot:[0,0,0],color:'#f25c5c',script:'',kind:'kill'});
+  return L}
+function buildTower(){
+  const L=[];let id=0;const N=30,R=9;
+  for(let k=0;k<N;k++){const a=k*40*Math.PI/180,x=+(R*Math.cos(a)).toFixed(2),z=+(R*Math.sin(a)).toFixed(2),top=+(1+.8*k).toFixed(2);
+    let kind='normal',s=3,col='#5c9cf2',sc='',nm='Platforma '+(k+1);
+    if(k===0){kind='check';s=4;col='#5cd08a';nm='Boshlanish'}
+    else if(k===N-1){kind='win';s=5;col='#f2b84b';nm='Marra'}
+    else if(k%10===0){kind='check';s=4;col='#5cd08a';nm='Checkpoint '+(k+1)}
+    else if(k%5===3){col='#a78bfa';sc='part.y=((time+'+(k%3)+')%3<2)?'+(top-.5)+':-40';nm='Yo\u02bboqoladigan '+(k+1)}
+    L.push({id:++id,name:nm,shape:'box',pos:[x,top-.5,z],size:[s,1,s],rot:[0,0,0],color:col,script:sc,kind})}
+  L.push({id:++id,name:'Lava',shape:'box',pos:[0,.2,0],size:[60,.4,60],rot:[0,0,0],color:'#f25c5c',script:'',kind:'kill'});
+  return L}
 $('#obby2').onclick=()=>{const L=buildHard();edit(()=>{items=L;seq=L.length+1;sel=null});tgt.x=0;tgt.y=3;tgt.z=-12;rad=50;toastMsg('Qiyin obby yuklandi. Orqaga tugmasi bilan qaytarasiz.')};
 $('#rotL').onclick=()=>{thT=(thT===null?th:thT)-Math.PI/2};$('#rotR').onclick=()=>{thT=(thT===null?th:thT)+Math.PI/2};
-$('#play').onclick=()=>playing?stop():play();
+$('#play').onclick=()=>{if(playing){stop();if(window.levelMode)play()}else play()};
 $('#obby').onclick=()=>{const L=[];
   [[0,1,0,8,6,'check'],[0,1.5,-8,4,4],[0,2,-15.5,4,4],[0,2.5,-24.5,6,6,'check'],[7.5,3,-24.5,3,3],[14,3.5,-24.5,3,3],[20.5,4,-24.5,3,3],[27.5,4.5,-24.5,4,6,'check'],[27.5,5,-16.5,3,3],[27.5,5.5,-9.5,3,3],[27.5,6,-1.5,6,6,'win']].forEach((p,i)=>{
     L.push({id:i+1,name:i===0?'Boshlanish':p[5]==='win'?'Marra':p[5]==='check'?'Checkpoint '+(i+1):'Platforma '+(i+1),shape:'box',pos:[p[0],p[1]-.5,p[2]],size:[p[3],1,p[4]],rot:[0,0,0],color:{check:'#5cd08a',win:'#f2b84b'}[p[5]]||'#5c9cf2',script:'',kind:p[5]||'normal'})});
@@ -279,6 +317,12 @@ $('#undo').onclick=()=>swap(undo,redo);$('#redo').onclick=()=>swap(redo,undo);
 $('#del').onclick=()=>{if(sel)edit(()=>{items=items.filter(i=>i.id!==sel);sel=null})};
 document.querySelectorAll('[data-av]').forEach(i=>{i.value=av[i.dataset.av];i.addEventListener('input',()=>{av[i.dataset.av]=i.value;if(AM[i.dataset.av])AM[i.dataset.av].color.set(i.value);try{localStorage.setItem('blokstudiya:av',JSON.stringify(av))}catch(e){}})});
 load();refresh();
+(function(){const LV=new URLSearchParams(location.search).get('level');
+  if(!['easy','hard','tower','race'].includes(LV))return;
+  window.levelMode=true;window.levelName=LV;document.body.classList.add('lvl');
+  if(LV==='easy')$('#obby').onclick();else if(LV==='hard')$('#obby2').onclick();
+  else{const L=LV==='tower'?buildTower():buildRace();edit(()=>{items=L;seq=L.length+1;sel=null})}
+  undo=[];redo=[];toastMsg('');setTimeout(()=>{if(!playing)play()},300)})();
 </script>
 </body>
 </html>
