@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#3db8a5">
-<title>Sakrash yo‘li 3D — Blok Dunyo</title>
+<title>Sakrash yo‘li 360° — Blok Dunyo</title>
 <style>
 :root{--ink:#17202a;--teal:#3db8a5}
 *{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#9de2ff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink)}
@@ -18,16 +18,16 @@
 </style>
 </head>
 <body>
-<canvas id="game" aria-label="Sakrash yo‘li 3D o‘yini"></canvas>
-<div id="hud"><a class="card" id="back" href="index.html">← Blok Dunyo</a><span class="card" id="title">Sakrash yo‘li · 3D</span><span class="card" id="coins">◎ 0</span><span class="card" id="lives">♥ 3</span><span class="card" id="timer">⏱ 0</span><button class="card" id="pause">Ⅱ</button></div>
-<div id="toast"></div><div id="help">← → / A D — yurish · Space / ↑ — sakrash</div>
+<canvas id="game" aria-label="Sakrash yo‘li 360 daraja 3D o‘yini"></canvas>
+<div id="hud"><a class="card" id="back" href="index.html">← Blok Dunyo</a><span class="card" id="title">Sakrash yo‘li · 360°</span><span class="card" id="coins">◎ 0</span><span class="card" id="lives">♥ 3</span><span class="card" id="timer">⏱ 0</span><button class="card" id="pause">Ⅱ</button></div>
+<div id="toast"></div><div id="help">Ekranni suring — 360° kamera · ← → / A D — yurish · Space / ↑ — sakrash</div>
 <div id="controls"><div class="cluster"><button class="ctrl" id="left">←</button><button class="ctrl" id="right">→</button></div><button class="ctrl" id="jump">↑</button></div>
 <div id="finish"><div class="panel"><h1>Daraja tugadi!</h1><p id="result"></p><button class="primary" id="again">Qayta o‘ynash</button></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 const canvas=document.querySelector('#game');const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9de2ff);scene.fog=new THREE.Fog(0x9de2ff,35,105);
-const camera=new THREE.OrthographicCamera(-12,12,7,-7,.1,200);camera.position.set(10,7,24);camera.lookAt(10,4,0);
+const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,180);let yaw=0,pitch=.34,radius=10,dragging=false,lastPointerX=0,lastPointerY=0;
 scene.add(new THREE.HemisphereLight(0xeafaff,0x7185a2,1.8));const sun=new THREE.DirectionalLight(0xffffff,2.2);sun.position.set(-10,18,16);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);scene.add(sun);
 const world=new THREE.Group();scene.add(world);const input={left:false,right:false,jump:false};let paused=false,won=false,score=0,lives=3,started=performance.now(),last=started,toastTimer=0,cameraX=0;
 const avatar={skin:'#f7e3d0',shirt:'#3db8a5',pants:'#4a5563'};try{const s=JSON.parse(localStorage.getItem('blokdunyo:v1')||'null');if(s&&s.worn){const c={sk0:'#f7e3d0',sk1:'#f1d3b3',sk2:'#e8c9a0',sk3:'#c68e5f',sk4:'#8d5a3b',sh0:'#3db8a5',sh1:'#f25c5c',sh2:'#5c9cf2',sh3:'#f2b84b',sh4:'#a78bfa',sh5:'#1b1d22',sh6:'#f2f4f7',sh7:'#5cd08a',pa0:'#4a5563',pa1:'#1b1d22',pa2:'#2f4f9e',pa3:'#9a8f6a',pa4:'#e8eaee',pa5:'#a33a3a'};avatar.skin=c[s.worn.skin]||avatar.skin;avatar.shirt=c[s.worn.sh]||avatar.shirt;avatar.pants=c[s.worn.pa]||avatar.pants}}catch(e){}
@@ -44,7 +44,7 @@ hazards.forEach(h=>{for(let x=h.x;x<h.x+h.w;x+=.8){const cone=new THREE.Mesh(new
 const coins=[];for(const c of coinData){const m=new THREE.Mesh(new THREE.TorusGeometry(.28,.09,10,20),mat('#ffd34d'));m.position.set(c.x,c.y,c.z);m.rotation.y=Math.PI/2;m.castShadow=true;m.userData=c;world.add(m);coins.push(m)}
 function flag(x,y,color){const g=new THREE.Group();box(.14,3,.14,'#ffffff',x,y+1.5,.1,g);const f=box(1.2,.65,.08,color,x+.57,y+2.5,.1,g);world.add(g);return g}checkpoints.forEach(c=>flag(c.x,c.y,'#f2b84b'));flag(finish.x,finish.y,'#f25c5c');
 const playerGroup=new THREE.Group();world.add(playerGroup);box(1,1.15,.8,avatar.shirt,0,.6,0,playerGroup);box(.78,.58,.82,avatar.skin,0,1.47,0,playerGroup);box(.18,.2,.06,'#20252b',-.2,1.53,.42,playerGroup);box(.18,.2,.06,'#20252b',.2,1.53,.42,playerGroup);box(.42,.07,.06,'#20252b',0,1.34,.43,playerGroup);box(.35,.6,.7,avatar.pants,-.25,-.27,0,playerGroup);box(.35,.6,.7,avatar.pants,.25,-.27,0,playerGroup);playerGroup.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
-function resize(){const w=innerWidth,h=innerHeight,aspect=w/h;const size=7;camera.left=-size*aspect;camera.right=size*aspect;camera.top=size;camera.bottom=-size;camera.updateProjectionMatrix();renderer.setSize(w,h,false)}addEventListener('resize',resize);resize();
+function resize(){const w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false)}addEventListener('resize',resize);resize();
 function show(t){const e=document.querySelector('#toast');e.textContent=t;e.style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.style.display='none',1300)}
 function resetAll(){player.x=2;player.y=5;player.spawnX=2;player.spawnY=5;player.vx=0;player.vy=0;score=0;lives=3;won=false;cameraX=0;started=performance.now();coinData.forEach(c=>c.taken=false);coins.forEach(m=>m.visible=true);checkpoints.forEach(c=>c.active=false);document.querySelector('#coins').textContent='◎ 0';document.querySelector('#lives').textContent='♥ 3';document.querySelector('#finish').style.display='none'}
 function respawn(){lives--;document.querySelector('#lives').textContent='♥ '+lives;if(lives<=0){show('Qayta boshlanmoqda…');setTimeout(resetAll,800);return}player.x=player.spawnX;player.y=player.spawnY;player.vx=0;player.vy=0;show('Checkpoint’dan davom etasiz')}
@@ -55,7 +55,8 @@ function update(dt,now){if(paused||won)return;const speed=8;player.vx=(input.rig
   for(const cp of checkpoints)if(!cp.active&&player.x>cp.x){cp.active=true;player.spawnX=cp.x;player.spawnY=cp.y+1.5;show('Checkpoint saqlandi!')}
   if(player.x>finish.x-.7&&player.y>finish.y-1&&player.y<finish.y+3){won=true;const seconds=Math.floor((now-started)/1000);document.querySelector('#result').textContent=`Natija: ${score} tanga · ${seconds} soniya`;document.querySelector('#finish').style.display='grid';try{const s=JSON.parse(localStorage.getItem('blokdunyo:v1')||'{}');s.plays=s.plays||{};s.plays.obby=(s.plays.obby||0)+1;s.coins=(s.coins||0)+50;localStorage.setItem('blokdunyo:v1',JSON.stringify(s))}catch(e){}}
   if(player.y<-8){respawn();return}cameraX=Math.max(0,Math.min(player.x-8,finish.x-15));document.querySelector('#timer').textContent='⏱ '+Math.floor((now-started)/1000)}
-function render(now){playerGroup.position.set(player.x,player.y,0);playerGroup.rotation.z=Math.sin(now/180)*.025;coins.forEach(m=>{if(m.visible){m.rotation.x+=.03;m.rotation.z+=.02}});world.position.x=-cameraX;camera.position.x=10;camera.position.y=7;camera.lookAt(10,4,0);renderer.render(scene,camera)}
+function render(now){playerGroup.position.set(player.x,player.y,0);playerGroup.rotation.z=Math.sin(now/180)*.025;coins.forEach(m=>{if(m.visible){m.rotation.x+=.03;m.rotation.z+=.02}});const targetY=player.y+1.15;camera.position.set(player.x+Math.sin(yaw)*radius,targetY+Math.sin(pitch)*radius,Math.cos(yaw)*radius);camera.lookAt(player.x,targetY,0);renderer.render(scene,camera)}
+canvas.addEventListener('pointerdown',e=>{dragging=true;lastPointerX=e.clientX;lastPointerY=e.clientY;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-lastPointerX,dy=e.clientY-lastPointerY;lastPointerX=e.clientX;lastPointerY=e.clientY;yaw-=dx*.008;pitch=Math.max(-.15,Math.min(.9,pitch+dy*.006))});['pointerup','pointercancel','pointerleave'].forEach(type=>canvas.addEventListener(type,()=>{dragging=false}));
 function loop(now){const dt=Math.min(.033,(now-last)/1000);last=now;update(dt,now);render(now);requestAnimationFrame(loop)}requestAnimationFrame(loop);
 function bind(id,key){const el=document.querySelector(id),on=e=>{e.preventDefault();input[key]=true},off=e=>{e.preventDefault();input[key]=false};el.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(x=>el.addEventListener(x,off))}bind('#left','left');bind('#right','right');bind('#jump','jump');
 addEventListener('keydown',e=>{if(['ArrowLeft','a','A'].includes(e.key))input.left=true;if(['ArrowRight','d','D'].includes(e.key))input.right=true;if(['ArrowUp',' ','w','W'].includes(e.key)&&!e.repeat)input.jump=true;if(e.key==='Escape'){paused=!paused;show(paused?'Pauza':'Davom etadi')}});addEventListener('keyup',e=>{if(['ArrowLeft','a','A'].includes(e.key))input.left=false;if(['ArrowRight','d','D'].includes(e.key))input.right=false});
