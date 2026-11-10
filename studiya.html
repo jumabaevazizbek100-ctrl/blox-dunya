@@ -319,7 +319,7 @@ document.querySelectorAll('[data-av]').forEach(i=>{i.value=av[i.dataset.av];i.ad
 load();refresh();
 (function(){const LV=new URLSearchParams(location.search).get('level');
   if(!['easy','hard','tower','race'].includes(LV))return;
-  window.levelMode=true;window.levelName=LV;document.body.classList.add('lvl');
+  window.levelMode=true;window.levelName=LV;document.title=LV==='easy'?'Sakrash yo‘li — Blok Dunyo':'Blok Dunyo';document.body.classList.add('lvl');
   if(LV==='easy')$('#obby').onclick();else if(LV==='hard')$('#obby2').onclick();
   else{const L=LV==='tower'?buildTower():buildRace();edit(()=>{items=L;seq=L.length+1;sel=null})}
   undo=[];redo=[];toastMsg('');setTimeout(()=>{if(!playing)play()},300)})();
