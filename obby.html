@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#3db8a5">
+<title>Sakrash yo‘li — Blok Dunyo</title>
+<style>
+:root{--ink:#17202a;--teal:#3db8a5;--mint:#8ff0de;--blue:#5c9cf2;--red:#f25c5c;--gold:#ffd34d}
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#9de2ff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink)}
+canvas{display:block;width:100vw;height:100vh;touch-action:none}
+#hud{position:fixed;top:12px;left:12px;right:12px;display:flex;align-items:center;gap:8px;z-index:3;pointer-events:none;flex-wrap:wrap}
+.card{background:#ffffffdc;border:1px solid #ffffffaa;box-shadow:0 4px 18px #17334a22;border-radius:14px;padding:8px 11px;font-size:13px;font-weight:800}
+#back{pointer-events:auto;text-decoration:none;color:var(--ink)}#title{font-size:16px;margin-right:auto}
+#pause{pointer-events:auto;border:0;background:#ffffffdc;color:var(--ink);cursor:pointer}
+#toast{position:fixed;left:50%;top:24%;transform:translate(-50%,-50%);z-index:5;background:#17202aee;color:#fff;padding:14px 20px;border-radius:16px;font-weight:800;display:none;text-align:center}
+#controls{position:fixed;left:0;right:0;bottom:20px;display:flex;justify-content:space-between;padding:0 20px;z-index:4;pointer-events:none}
+#controls .cluster{display:flex;gap:12px}.ctrl{pointer-events:auto;width:64px;height:56px;border:0;border-radius:18px;background:#ffffffd9;color:var(--ink);font-size:25px;font-weight:900;box-shadow:0 5px 14px #17334a25;touch-action:none}
+#help{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:#ffffffb8;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;white-space:nowrap}
+#finish{position:fixed;inset:0;background:#17202aeF;color:#fff;display:none;place-items:center;z-index:10;text-align:center;padding:24px}
+#finish .panel{max-width:340px;background:#ffffff;color:var(--ink);border-radius:24px;padding:26px;box-shadow:0 20px 60px #0005}.panel h1{margin:0 0 8px}.panel p{color:#53606c}.primary{border:0;border-radius:14px;padding:13px 18px;background:var(--teal);color:#fff;font-weight:900;font-size:15px}
+@media (min-width:700px){#controls{padding:0 42px}.ctrl{width:70px;height:60px}#help{bottom:25px}}
+</style>
+</head>
+<body>
+<canvas id="game" aria-label="Sakrash yo‘li o‘yini"></canvas>
+<div id="hud">
+  <a class="card" id="back" href="index.html">← Blok Dunyo</a>
+  <span class="card" id="title">Sakrash yo‘li · 1-daraja</span>
+  <span class="card" id="coins">◎ 0</span><span class="card" id="lives">♥ 3</span><span class="card" id="timer">⏱ 0</span>
+  <button class="card" id="pause">Ⅱ</button>
+</div>
+<div id="toast"></div>
+<div id="help">← → / A D — yurish · Space / ↑ — sakrash</div>
+<div id="controls"><div class="cluster"><button class="ctrl" id="left">←</button><button class="ctrl" id="right">→</button></div><button class="ctrl" id="jump">↑</button></div>
+<div id="finish"><div class="panel"><h1>Daraja tugadi!</h1><p id="result"></p><button class="primary" id="again">Qayta o‘ynash</button></div></div>
+<script>
+const canvas=document.querySelector('#game'),ctx=canvas.getContext('2d');let W=innerWidth,H=innerHeight,dpr=1;
+function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
+const input={left:false,right:false,jump:false};let paused=false,won=false,camera=0,score=0,lives=3,started=performance.now(),last=started,toastTimer=0;
+const avatar={skin:'#f7e3d0',shirt:'#3db8a5',pants:'#4a5563'};try{const s=JSON.parse(localStorage.getItem('blokdunyo:v1')||'null');if(s&&s.worn){const colors={sk0:'#f7e3d0',sk1:'#f1d3b3',sk2:'#e8c9a0',sk3:'#c68e5f',sk4:'#8d5a3b',sh0:'#3db8a5',sh1:'#f25c5c',sh2:'#5c9cf2',sh3:'#f2b84b',sh4:'#a78bfa',sh5:'#1b1d22',sh6:'#f2f4f7',sh7:'#5cd08a',pa0:'#4a5563',pa1:'#1b1d22',pa2:'#2f4f9e',pa3:'#9a8f6a',pa4:'#e8eaee',pa5:'#a33a3a'};avatar.skin=colors[s.worn.skin]||avatar.skin;avatar.shirt=colors[s.worn.sh]||avatar.shirt;avatar.pants=colors[s.worn.pa]||avatar.pants}}catch(e){}
+const player={x:70,y:380,w:34,h:46,vx:0,vy:0,spawnX:70,spawnY:380,ground:false,face:1};
+const platforms=[{x:-80,y:540,w:500,h:34},{x:500,y:470,w:170,h:28},{x:770,y:390,w:170,h:28},{x:1030,y:480,w:220,h:28},{x:1350,y:405,w:170,h:28},{x:1610,y:330,w:190,h:28},{x:1900,y:450,w:250,h:28},{x:2260,y:360,w:220,h:28},{x:2590,y:285,w:260,h:28}];
+const hazards=[{x:420,y:570,w:90,h:20},{x:670,y:570,w:100,h:20},{x:940,y:570,w:90,h:20},{x:1250,y:570,w:100,h:20},{x:1520,y:570,w:90,h:20},{x:1800,y:570,w:100,h:20},{x:2150,y:570,w:110,h:20},{x:2480,y:570,w:100,h:20}];
+const coins=[...Array(16)].map((_,i)=>({x:270+i*165,y: [430,360,440,350,300][i%5],taken:false}));
+const checkpoints=[{x:780,y:350,active:false},{x:1620,y:290,active:false},{x:2270,y:320,active:false}];const finish={x:2760,y:205,w:20,h:80};
+function overlap(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
+function show(t){const el=document.querySelector('#toast');el.textContent=t;el.style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.style.display='none',1300)}
+function respawn(){lives--;document.querySelector('#lives').textContent='♥ '+lives;if(lives<=0){show('Qayta boshlanmoqda…');setTimeout(resetAll,850);return}player.x=player.spawnX;player.y=player.spawnY;player.vx=0;player.vy=0;show('Checkpoint’dan davom etasiz')}
+function resetAll(){player.x=70;player.y=380;player.spawnX=70;player.spawnY=380;player.vx=0;player.vy=0;score=0;lives=3;camera=0;won=false;started=performance.now();coins.forEach(c=>c.taken=false);checkpoints.forEach(c=>c.active=false);document.querySelector('#coins').textContent='◎ 0';document.querySelector('#lives').textContent='♥ 3';document.querySelector('#finish').style.display='none'}
+function update(dt,now){if(paused||won)return;const speed=260;player.vx=(input.right?speed:0)-(input.left?speed:0);if(player.vx)player.face=Math.sign(player.vx);if(input.jump&&player.ground){player.vy=-650;player.ground=false}input.jump=false;player.vy+=1450*dt;const oldBottom=player.y+player.h;player.x+=player.vx*dt;player.y+=player.vy*dt;player.ground=false;
+  for(const p of platforms){if(player.vy>=0&&oldBottom<=p.y+8&&player.y+player.h>=p.y&&player.x+player.w>p.x&&player.x<p.x+p.w){player.y=p.y-player.h;player.vy=0;player.ground=true}}
+  for(const h of hazards)if(overlap(player,h)){respawn();return}
+  for(const c of coins){const box={x:c.x-11,y:c.y-11,w:22,h:22};if(!c.taken&&overlap(player,box)){c.taken=true;score+=10;document.querySelector('#coins').textContent='◎ '+score}}
+  for(const cp of checkpoints)if(!cp.active&&player.x>cp.x){cp.active=true;player.spawnX=cp.x;player.spawnY=cp.y-player.h;show('Checkpoint saqlandi!')}
+  if(overlap(player,finish)){won=true;const seconds=Math.floor((now-started)/1000);document.querySelector('#result').textContent=`Natija: ${score} tanga · ${seconds} soniya · ${3-lives} marta yiqildingiz.`;document.querySelector('#finish').style.display='grid';try{const s=JSON.parse(localStorage.getItem('blokdunyo:v1')||'{}');s.plays=s.plays||{};s.plays.obby=(s.plays.obby||0)+1;s.coins=(s.coins||0)+50;localStorage.setItem('blokdunyo:v1',JSON.stringify(s))}catch(e){}}
+  if(player.y>H+220){respawn();return}camera=Math.max(0,Math.min(player.x-W*.32,finish.x-W*.55));document.querySelector('#timer').textContent='⏱ '+Math.floor((now-started)/1000)}
+function draw(){ctx.clearRect(0,0,W,H);const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#9de2ff');sky.addColorStop(1,'#f7dca4');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);ctx.save();ctx.translate(-camera,0);
+  ctx.fillStyle='#ffffff66';for(let i=0;i<16;i++){const x=(i*240+90)%3100;ctx.beginPath();ctx.ellipse(x,110+(i%3)*35,55,14,0,0,Math.PI*2);ctx.fill()}
+  for(const p of platforms){ctx.fillStyle='#2f74c9';ctx.fillRect(p.x,p.y,p.w,p.h);ctx.fillStyle='#8ff0de';ctx.fillRect(p.x,p.y,p.w,8)}
+  for(const h of hazards){ctx.fillStyle='#f25c5c';ctx.fillRect(h.x,h.y,h.w,h.h);ctx.fillStyle='#ffd34d';for(let x=h.x;x<h.x+h.w;x+=20){ctx.beginPath();ctx.moveTo(x,h.y);ctx.lineTo(x+10,h.y-12);ctx.lineTo(x+20,h.y);ctx.fill()}}
+  for(const c of coins){if(c.taken)continue;ctx.fillStyle='#ffd34d';ctx.beginPath();ctx.arc(c.x,c.y,11,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff4a8';ctx.beginPath();ctx.arc(c.x-3,c.y-3,3,0,Math.PI*2);ctx.fill()}
+  for(const cp of checkpoints){ctx.fillStyle=cp.active?'#5cd08a':'#ffffff';ctx.fillRect(cp.x,cp.y-70,7,70);ctx.fillStyle=cp.active?'#5cd08a':'#f2b84b';ctx.beginPath();ctx.moveTo(cp.x+7,cp.y-68);ctx.lineTo(cp.x+48,cp.y-55);ctx.lineTo(cp.x+7,cp.y-42);ctx.fill()}
+  ctx.fillStyle='#17202a';ctx.fillRect(finish.x,finish.y,7,80);ctx.fillStyle='#f2b84b';ctx.beginPath();ctx.moveTo(finish.x+7,finish.y);ctx.lineTo(finish.x+54,finish.y+15);ctx.lineTo(finish.x+7,finish.y+30);ctx.fill();
+  ctx.fillStyle=avatar.shirt;ctx.fillRect(player.x,player.y+15,player.w,player.h-15);ctx.fillStyle=avatar.skin;ctx.fillRect(player.x+3,player.y,player.w-6,24);ctx.fillStyle='#20252b';ctx.fillRect(player.x+10,player.y+8,5,5);ctx.fillRect(player.x+22,player.y+8,5,5);ctx.fillRect(player.x+10,player.y+18,15,3);ctx.fillStyle=avatar.pants;ctx.fillRect(player.x+3,player.y+player.h-17,12,17);ctx.fillRect(player.x+19,player.y+player.h-17,12,17);
+  ctx.restore()}
+function frame(now){const dt=Math.min(.033,(now-last)/1000);last=now;update(dt,now);draw();requestAnimationFrame(frame)}requestAnimationFrame(frame);
+function bind(id,key){const el=document.querySelector(id),on=e=>{e.preventDefault();input[key]=true},off=e=>{e.preventDefault();input[key]=false};['pointerdown','touchstart'].forEach(x=>el.addEventListener(x,on,{passive:false}));['pointerup','pointercancel','pointerleave','touchend'].forEach(x=>el.addEventListener(x,off,{passive:false}))}bind('#left','left');bind('#right','right');bind('#jump','jump');
+addEventListener('keydown',e=>{if(['ArrowLeft','a','A'].includes(e.key))input.left=true;if(['ArrowRight','d','D'].includes(e.key))input.right=true;if(['ArrowUp',' ','w','W'].includes(e.key)&&!e.repeat)input.jump=true;if(e.key==='Escape'){paused=!paused;show(paused?'Pauza':'Davom etadi')}});addEventListener('keyup',e=>{if(['ArrowLeft','a','A'].includes(e.key))input.left=false;if(['ArrowRight','d','D'].includes(e.key))input.right=false});
+document.querySelector('#pause').onclick=()=>{paused=!paused;document.querySelector('#pause').textContent=paused?'▶':'Ⅱ';show(paused?'Pauza':'Davom etadi')};document.querySelector('#again').onclick=resetAll;
+</script>
+</body>
+</html>
