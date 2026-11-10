@@ -1,66 +1,14 @@
 <!doctype html>
 <html lang="uz">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#3db8a5">
-<title>Sakrash yo‘li 360° — Blok Dunyo</title>
-<style>
-:root{--ink:#17202a;--teal:#3db8a5}
-*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#9de2ff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink)}
-#game{display:block;width:100vw;height:100vh;touch-action:none}
-#hud{position:fixed;top:12px;left:12px;right:12px;display:flex;align-items:center;gap:8px;z-index:3;pointer-events:none;flex-wrap:wrap}.card{background:#ffffffdc;border:1px solid #ffffffaa;box-shadow:0 4px 18px #17334a22;border-radius:14px;padding:8px 11px;font-size:13px;font-weight:800}.card#back,.card#pause{pointer-events:auto}.card#back{text-decoration:none;color:var(--ink)}#title{font-size:16px;margin-right:auto}#pause{border:0;color:var(--ink);cursor:pointer}
-#toast{position:fixed;left:50%;top:24%;transform:translate(-50%,-50%);z-index:5;background:#17202aee;color:#fff;padding:14px 20px;border-radius:16px;font-weight:800;display:none;text-align:center}
-#controls{position:fixed;left:0;right:0;bottom:20px;display:flex;justify-content:space-between;padding:0 20px;z-index:4;pointer-events:none}.cluster{display:flex;gap:12px}.ctrl{pointer-events:auto;width:64px;height:56px;border:0;border-radius:18px;background:#ffffffd9;color:var(--ink);font-size:25px;font-weight:900;box-shadow:0 5px 14px #17334a25;touch-action:none}
-#help{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:#ffffffb8;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;white-space:nowrap}
-#finish{position:fixed;inset:0;background:#17202aeF;color:#fff;display:none;place-items:center;z-index:10;text-align:center;padding:24px}.panel{max-width:340px;background:#fff;color:var(--ink);border-radius:24px;padding:26px;box-shadow:0 20px 60px #0005}.panel h1{margin:0 0 8px}.panel p{color:#53606c}.primary{border:0;border-radius:14px;padding:13px 18px;background:var(--teal);color:#fff;font-weight:900;font-size:15px}
-@media(min-width:700px){#controls{padding:0 42px}.ctrl{width:70px;height:60px}#help{bottom:25px}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="refresh" content="0;url=studiya.html?level=easy">
+  <title>Sakrash yo‘li — Blok Dunyo</title>
+  <script>location.replace('studiya.html?level=easy');</script>
 </head>
 <body>
-<canvas id="game" aria-label="Sakrash yo‘li 360 daraja 3D o‘yini"></canvas>
-<div id="hud"><a class="card" id="back" href="index.html">← Blok Dunyo</a><span class="card" id="title">Sakrash yo‘li · 360°</span><span class="card" id="coins">◎ 0</span><span class="card" id="lives">♥ 3</span><span class="card" id="timer">⏱ 0</span><button class="card" id="pause">Ⅱ</button></div>
-<div id="toast"></div><div id="help">Ekranni suring — 360° kamera · ← → / A D — yurish · Space / ↑ — sakrash</div>
-<div id="controls"><div class="cluster"><button class="ctrl" id="left">←</button><button class="ctrl" id="right">→</button></div><button class="ctrl" id="jump">↑</button></div>
-<div id="finish"><div class="panel"><h1>Daraja tugadi!</h1><p id="result"></p><button class="primary" id="again">Qayta o‘ynash</button></div></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
-const canvas=document.querySelector('#game');const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x9de2ff);scene.fog=new THREE.Fog(0x9de2ff,35,105);
-const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,180);let yaw=0,pitch=.34,radius=10,dragging=false,lastPointerX=0,lastPointerY=0;
-scene.add(new THREE.HemisphereLight(0xeafaff,0x7185a2,1.8));const sun=new THREE.DirectionalLight(0xffffff,2.2);sun.position.set(-10,18,16);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);scene.add(sun);
-const world=new THREE.Group();scene.add(world);const input={left:false,right:false,jump:false};let paused=false,won=false,score=0,lives=3,started=performance.now(),last=started,toastTimer=0,cameraX=0;
-const avatar={skin:'#f7e3d0',shirt:'#3db8a5',pants:'#4a5563'};try{const s=JSON.parse(localStorage.getItem('blokdunyo:v1')||'null');if(s&&s.worn){const c={sk0:'#f7e3d0',sk1:'#f1d3b3',sk2:'#e8c9a0',sk3:'#c68e5f',sk4:'#8d5a3b',sh0:'#3db8a5',sh1:'#f25c5c',sh2:'#5c9cf2',sh3:'#f2b84b',sh4:'#a78bfa',sh5:'#1b1d22',sh6:'#f2f4f7',sh7:'#5cd08a',pa0:'#4a5563',pa1:'#1b1d22',pa2:'#2f4f9e',pa3:'#9a8f6a',pa4:'#e8eaee',pa5:'#a33a3a'};avatar.skin=c[s.worn.skin]||avatar.skin;avatar.shirt=c[s.worn.sh]||avatar.shirt;avatar.pants=c[s.worn.pa]||avatar.pants}}catch(e){}
-const player={x:2,y:5,w:1,h:1.7,vx:0,vy:0,spawnX:2,spawnY:5,ground:false};
-const platforms=[{x:-2,y:0,w:18,d:5},{x:20,y:3,w:6,d:5},{x:30,y:6,w:6,d:5},{x:40,y:2,w:8,d:5},{x:53,y:5,w:6,d:5},{x:64,y:8,w:7,d:5},{x:77,y:3,w:8,d:5},{x:91,y:6,w:7,d:5},{x:104,y:10,w:9,d:5}];
-const hazards=[{x:16,w:4},{x:26,w:4},{x:36,w:4},{x:48,w:5},{x:59,w:5},{x:71,w:6},{x:85,w:6},{x:98,w:6}];
-const coinData=[...Array(16)].map((_,i)=>({x:8+i*6.2,y:[3.1,6.2,4.1,7.2,9.2][i%5],z:.2,taken:false}));
-const checkpoints=[{x:30,y:7,active:false},{x:64,y:9,active:false},{x:91,y:7,active:false}];const finish={x:108,y:11};
-const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.75});
-function box(w,h,d,color,x,y,z=0,group=world){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;group.add(m);return m}
-function platform(p){const g=new THREE.Group();g.userData={x:p.x,y:p.y,w:p.w};g.position.y=p.y-.55;box(p.w,1, p.d,'#2f74c9',p.x+p.w/2,0,0,g);box(p.w,.16,p.d,'#8ff0de',p.x+p.w/2,.58,0,g);world.add(g);return g}
-platforms.forEach(platform);
-hazards.forEach(h=>{for(let x=h.x;x<h.x+h.w;x+=.8){const cone=new THREE.Mesh(new THREE.ConeGeometry(.42,.8,4),mat('#f25c5c'));cone.position.set(x+.4,.42,0);cone.rotation.y=Math.PI/4;cone.castShadow=true;world.add(cone)} });
-const coins=[];for(const c of coinData){const m=new THREE.Mesh(new THREE.TorusGeometry(.28,.09,10,20),mat('#ffd34d'));m.position.set(c.x,c.y,c.z);m.rotation.y=Math.PI/2;m.castShadow=true;m.userData=c;world.add(m);coins.push(m)}
-function flag(x,y,color){const g=new THREE.Group();box(.14,3,.14,'#ffffff',x,y+1.5,.1,g);const f=box(1.2,.65,.08,color,x+.57,y+2.5,.1,g);world.add(g);return g}checkpoints.forEach(c=>flag(c.x,c.y,'#f2b84b'));flag(finish.x,finish.y,'#f25c5c');
-const playerGroup=new THREE.Group();world.add(playerGroup);box(1,1.15,.8,avatar.shirt,0,.6,0,playerGroup);box(.78,.58,.82,avatar.skin,0,1.47,0,playerGroup);box(.18,.2,.06,'#20252b',-.2,1.53,.42,playerGroup);box(.18,.2,.06,'#20252b',.2,1.53,.42,playerGroup);box(.42,.07,.06,'#20252b',0,1.34,.43,playerGroup);box(.35,.6,.7,avatar.pants,-.25,-.27,0,playerGroup);box(.35,.6,.7,avatar.pants,.25,-.27,0,playerGroup);playerGroup.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
-function resize(){const w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false)}addEventListener('resize',resize);resize();
-function show(t){const e=document.querySelector('#toast');e.textContent=t;e.style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.style.display='none',1300)}
-function resetAll(){player.x=2;player.y=5;player.spawnX=2;player.spawnY=5;player.vx=0;player.vy=0;score=0;lives=3;won=false;cameraX=0;started=performance.now();coinData.forEach(c=>c.taken=false);coins.forEach(m=>m.visible=true);checkpoints.forEach(c=>c.active=false);document.querySelector('#coins').textContent='◎ 0';document.querySelector('#lives').textContent='♥ 3';document.querySelector('#finish').style.display='none'}
-function respawn(){lives--;document.querySelector('#lives').textContent='♥ '+lives;if(lives<=0){show('Qayta boshlanmoqda…');setTimeout(resetAll,800);return}player.x=player.spawnX;player.y=player.spawnY;player.vx=0;player.vy=0;show('Checkpoint’dan davom etasiz')}
-function update(dt,now){if(paused||won)return;const speed=8;player.vx=(input.right?speed:0)-(input.left?speed:0);if(input.jump&&player.ground){player.vy=15;player.ground=false}input.jump=false;player.vy-=30*dt;const oldBottom=player.y;player.x+=player.vx*dt;player.y+=player.vy*dt;player.ground=false;
-  for(const p of platforms){if(player.vy<=0&&oldBottom>=p.y&&player.y<=p.y&&player.x+.5>p.x&&player.x-.5<p.x+p.w){player.y=p.y+1.2;player.vy=0;player.ground=true}}
-  for(const h of hazards)if(player.x+.4>h.x&&player.x-.4<h.x+h.w&&player.y<2){respawn();return}
-  for(const m of coins){const c=m.userData;if(!c.taken&&Math.hypot(player.x-c.x,player.y-c.y)<1.25){c.taken=true;m.visible=false;score+=10;document.querySelector('#coins').textContent='◎ '+score}}
-  for(const cp of checkpoints)if(!cp.active&&player.x>cp.x){cp.active=true;player.spawnX=cp.x;player.spawnY=cp.y+1.5;show('Checkpoint saqlandi!')}
-  if(player.x>finish.x-.7&&player.y>finish.y-1&&player.y<finish.y+3){won=true;const seconds=Math.floor((now-started)/1000);document.querySelector('#result').textContent=`Natija: ${score} tanga · ${seconds} soniya`;document.querySelector('#finish').style.display='grid';try{const s=JSON.parse(localStorage.getItem('blokdunyo:v1')||'{}');s.plays=s.plays||{};s.plays.obby=(s.plays.obby||0)+1;s.coins=(s.coins||0)+50;localStorage.setItem('blokdunyo:v1',JSON.stringify(s))}catch(e){}}
-  if(player.y<-8){respawn();return}cameraX=Math.max(0,Math.min(player.x-8,finish.x-15));document.querySelector('#timer').textContent='⏱ '+Math.floor((now-started)/1000)}
-function render(now){playerGroup.position.set(player.x,player.y,0);playerGroup.rotation.z=Math.sin(now/180)*.025;coins.forEach(m=>{if(m.visible){m.rotation.x+=.03;m.rotation.z+=.02}});const targetY=player.y+1.15;camera.position.set(player.x+Math.sin(yaw)*radius,targetY+Math.sin(pitch)*radius,Math.cos(yaw)*radius);camera.lookAt(player.x,targetY,0);renderer.render(scene,camera)}
-canvas.addEventListener('pointerdown',e=>{dragging=true;lastPointerX=e.clientX;lastPointerY=e.clientY;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-lastPointerX,dy=e.clientY-lastPointerY;lastPointerX=e.clientX;lastPointerY=e.clientY;yaw-=dx*.008;pitch=Math.max(-.15,Math.min(.9,pitch+dy*.006))});['pointerup','pointercancel','pointerleave'].forEach(type=>canvas.addEventListener(type,()=>{dragging=false}));
-function loop(now){const dt=Math.min(.033,(now-last)/1000);last=now;update(dt,now);render(now);requestAnimationFrame(loop)}requestAnimationFrame(loop);
-function bind(id,key){const el=document.querySelector(id),on=e=>{e.preventDefault();input[key]=true},off=e=>{e.preventDefault();input[key]=false};el.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(x=>el.addEventListener(x,off))}bind('#left','left');bind('#right','right');bind('#jump','jump');
-addEventListener('keydown',e=>{if(['ArrowLeft','a','A'].includes(e.key))input.left=true;if(['ArrowRight','d','D'].includes(e.key))input.right=true;if(['ArrowUp',' ','w','W'].includes(e.key)&&!e.repeat)input.jump=true;if(e.key==='Escape'){paused=!paused;show(paused?'Pauza':'Davom etadi')}});addEventListener('keyup',e=>{if(['ArrowLeft','a','A'].includes(e.key))input.left=false;if(['ArrowRight','d','D'].includes(e.key))input.right=false});
-document.querySelector('#pause').onclick=()=>{paused=!paused;document.querySelector('#pause').textContent=paused?'▶':'Ⅱ';show(paused?'Pauza':'Davom etadi')};document.querySelector('#again').onclick=resetAll;
-</script>
+  <p>Sakrash yo‘li yuklanmoqda…</p>
+  <p><a href="studiya.html?level=easy">O‘yinni ochish</a></p>
 </body>
 </html>
