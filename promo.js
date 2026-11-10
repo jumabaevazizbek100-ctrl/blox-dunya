@@ -38,7 +38,7 @@
       '.promo .prow{display:flex;gap:8px;align-items:center}' +
       '.promo .prow input{flex:1;min-width:0;border:1px solid #dfe3e8;border-radius:10px;padding:10px 12px;font:inherit;background:var(--bg);color:inherit}' +
       '.promo .prow input:focus{outline:2px solid var(--accent,#3db8a5);outline-offset:1px}' +
-      '.promo .prow .btn{white-space:nowrap;width:auto;flex:0 0 auto;min-height:44px;padding:0 14px}
+      '.promo .prow .btn{white-space:nowrap}
       '.promo .pm{font-size:13px;margin-top:8px;min-height:16px;color:var(--muted)}' +
       '.promo .pm.ok{color:#1f8a6d}' +
       '.promo .pm.bad{color:#c23d3d}';
