@@ -6,6 +6,8 @@
 <title>Blox Dunyo - Bepul Onlayn O'yinlar</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#101317">
+<meta name="author" content="Azizbek Jumabaev">
+<meta name="copyright" content="© 2026 Blox Dunyo — Azizbek Jumabaev">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 
@@ -76,7 +78,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 .big b,.sm b{font-size:17px;margin-top:6px}.big small,.sm small{color:var(--muted);font-weight:500;font-size:14px}
 .th2{display:block;width:100%;border-radius:14px;overflow:hidden}
 .big .th2{height:min(calc((100vw - 24px)*.5625),240px)}.sm .th2{height:min(calc((100vw - 36px)*.28),140px)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.copyright{margin:4px 0 0;color:var(--muted);font-size:12px;text-align:center;padding:8px 0 4px}
 .game div{flex:1;display:flex;flex-direction:column}.game small{color:var(--muted);font-weight:500}
 .rk{font-size:20px;font-weight:800;width:28px;text-align:center}
 #gpage{position:absolute;inset:0;background:var(--bg);z-index:5;display:flex;flex-direction:column;gap:12px;padding:12px;box-sizing:border-box;overflow-y:auto;padding-top:calc(12px + env(safe-area-inset-top,0px))}
@@ -227,7 +229,7 @@ $('#q').addEventListener('input',e=>{q=e.target.value.trim().toLowerCase();rende
 /* ---- games ---- */
 function gameCard(g,rank){return `<button class="game" data-g="${g.id}">${rank?`<span class="rk">${rank}</span>`:''}<span class="gt">${g.art}</span><div><b>${g.name}</b><small>${rank?(plays[g.id]||0)+' '+t('played'):g.by}</small></div></button>`}
 function renderHome(){const f=GAMES[0],rest=GAMES.slice(1),pl=g=>(plays[g.id]||0)+' '+t('played');
-  $('#pg-home').innerHTML=`<div class="me"><span class="avc" style="background:${byId[worn.bg].v}"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="12" y="23" width="16" height="15" rx="2" fill="${byId[worn.sh].v}"/><rect x="13" y="7" width="14" height="14" rx="3" fill="${byId[worn.skin].v}"/></svg></span><div><b>${t('welcome')}</b><small>\u25ce ${coins} tanga</small></div></div><h2 class="sh">${t('recommended')}</h2><button class="big" data-g="${f.id}"><span class="th2">${f.art}</span><b>${f.name}</b><small>${pl(f)}</small></button><h2 class="sh">${t('newGames')}</h2><div class="two">${rest.map(g=>`<button class="sm" data-g="${g.id}"><span class="th2">${g.art}</span><b>${g.name}</b><small>${g.by}</small></button>`).join('')}</div>`}
+  $('#pg-home').innerHTML=`<div class="me"><span class="avc" style="background:${byId[worn.bg].v}"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="12" y="23" width="16" height="15" rx="2" fill="${byId[worn.sh].v}"/><rect x="13" y="7" width="14" height="14" rx="3" fill="${byId[worn.skin].v}"/></svg></span><div><b>${t('welcome')}</b><small>\u25ce ${coins} tanga</small></div></div><h2 class="sh">${t('recommended')}</h2><button class="big" data-g="${f.id}"><span class="th2">${f.art}</span><b>${f.name}</b><small>${pl(f)}</small></button><h2 class="sh">${t('newGames')}</h2><div class="two">${rest.map(g=>`<button class="sm" data-g="${g.id}"><span class="th2">${g.art}</span><b>${g.name}</b><small>${g.by}</small></button>`).join('')}</div><p class="copyright">© 2026 Blox Dunyo — Azizbek Jumabaev</p>`}
 function renderGames(){
   renderHome();
   const s=[...GAMES].sort((a,b)=>(plays[b.id]||0)-(plays[a.id]||0));
