@@ -1,7 +1,7 @@
 const CACHE='blokdunyo-v6';
 const SB='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
 const THREE='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-const FILES=['./','index.html','studiya.html','slap-tower.html','manifest.json','config.js','assets/game.obf.js','assets/friends.obf.js','assets/promo.obf.js','assets/slap-tower-cover.png','icon-192.png','icon-512.png',THREE,SB];
+const FILES=['./','index.html','studiya.html','manifest.json','config.js','assets/game.obf.js','assets/friends.obf.js','assets/promo.obf.js','icon-192.png','icon-512.png',THREE,SB];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>Promise.all(FILES.map(f=>c.add(f).catch(()=>{})))).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;

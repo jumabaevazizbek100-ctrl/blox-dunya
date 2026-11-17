@@ -33,9 +33,8 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 #seg button{background:none;border-radius:999px;min-height:40px}
 #seg button[aria-pressed=true]{background:var(--raised)}
 #coins{background:var(--surface);border-radius:999px;padding:4px 12px;font-weight:700;font-size:14px;box-shadow:0 1px 3px rgba(0,0,0,.15)}
-#lang{height:40px;border:0;border-radius:999px;background:var(--surface);color:var(--text);font:600 12px inherit;padding:0 8px;box-shadow:0 1px 3px rgba(0,0,0,.15)}#sbtn{background:var(--surface);border-radius:999px}#slapLink{display:flex;align-items:center;gap:5px;height:40px;padding:0 10px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.18)}
-#search{padding:0 12px 8px;position:relative;z-index:2}#slapHero{display:flex;align-items:center;gap:12px;margin:0 12px 8px;padding:8px;border-radius:16px;background:linear-gradient(110deg,#173c4a,#202936 60%,#5b3c57);color:#fff;text-decoration:none;box-shadow:0 6px 18px rgba(0,0,0,.2);flex:none}#slapHero img{width:64px;height:64px;object-fit:cover;border-radius:12px;border:2px solid #8ff0de}#slapHero span{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}#slapHero b{font-size:18px}#slapHero small{color:#d3e5e6;font-size:13px}#slapHero strong{font-size:24px;color:#8ff0de;padding:0 8px}
-#q{width:100%;box-sizing:border-box;height:44px;border-radius:12px;border:1px solid var(--input);background:var(--surface);color:var(--text);font:inherit;padding:0 12px}
+#lang{height:40px;border:0;border-radius:999px;background:var(--surface);color:var(--text);font:600 12px inherit;padding:0 8px;box-shadow:0 1px 3px rgba(0,0,0,.15)}#sbtn{background:var(--surface);border-radius:999px}
+#search{padding:0 12px 8px;position:relative;z-index:2}#q{width:100%;box-sizing:border-box;height:44px;border-radius:12px;border:1px solid var(--input);background:var(--surface);color:var(--text);font:inherit;padding:0 12px}
 #pg-me{flex:1;min-height:0;display:flex;flex-direction:column;margin-top:-56px}
 #stage{flex:1;min-height:0;position:relative;background:linear-gradient(160deg,#e6e29a,#e9c6d6 55%,#c9aee0)}
 #stage canvas{display:block;width:100%;height:100%;touch-action:pan-y}
@@ -105,12 +104,10 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
     <span id="title" class="off"></span>
     <div id="seg"><div><button data-m="market" aria-pressed="true" data-i18n="shop">Doʻkon</button><button data-m="custom" aria-pressed="false" data-i18n="myClothes">Kiyimim</button></div></div>
     <select id="lang" aria-label="Til / Language"><option value="uz">Oʻzbekcha</option><option value="kaa">Qaraqalpaqsha</option><option value="en">English</option></select>
-    <a id="slapLink" href="slap-tower.html" aria-label="Slap Tower multiplayer">🖐 Slap Tower</a>
     <span id="coins" aria-label="Tangalar"></span>
     <button id="sbtn" aria-label="Qidirish">⌕</button>
   </header>
   <div id="search" class="off"><input id="q" type="search" placeholder="Narsani qidiring" aria-label="Qidirish" data-i18n-placeholder="searchPlaceholder"></div>
-  <a id="slapHero" href="slap-tower.html" aria-label="Slap Tower multiplayer"><img src="assets/slap-tower-cover.png" alt="Slap Tower cover"><span><b>🖐 Slap Tower</b><small>Multiplayer tower • Slap • Coins</small></span><strong>▶</strong></a>
   <main id="pg-me">
     <div id="stage"><div id="msg" data-i18n="avatarError">3D avatar bu qurilmada ishlamadi.</div></div>
     <section id="sheet">
