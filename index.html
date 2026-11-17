@@ -139,5 +139,8 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 <script src="assets/friends.obf.js"></script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script>
   <script src="assets/promo.obf.js"></script>
+  <script>
+    (()=>{const sync=()=>{const home=!document.querySelector('#pg-home')?.classList.contains('off');['slapHero','slapLink'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display=home?(id==='slapHero'?'flex':'flex'):'none'});};const h=document.querySelector('#pg-home');if(h)new MutationObserver(sync).observe(h,{attributes:true,attributeFilter:['class']});sync()})();
+  </script>
 </body>
 </html>
