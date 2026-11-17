@@ -63,7 +63,7 @@ function join(ws, payload) {
   if (room.players.size >= MAX_PLAYERS) return send(ws, 'error', { code: 'room_full', message: 'Room is full' });
   const player = {
     id: id(), ws, room, name: safeName(payload.name),
-    x: TOWER[0].x, y: 1.5, z: TOWER[0].z, vx: 0, vy: 0, vz: 0,
+    x: TOWER[0].x, y: 1.5, z: TOWER[0].z, vx: 0, vy: 0, vz: 0, kx: 0, kz: 0,
     frozen: false, alive: true, coins: 0, stage: 0,
     gear: new Set(['slap']), lastAction: new Map(), lastInput: now()
   };
@@ -109,8 +109,8 @@ function handleAction(player, payload) {
     const dx = target.x - player.x, dz = target.z - player.z;
     if (Math.hypot(dx, dz) > 4.2) return;
     const length = Math.hypot(dx, dz) || 1;
-    target.vx += (dx / length) * 20;
-    target.vz += (dz / length) * 20;
+    target.kx += (dx / length) * 20;
+    target.kz += (dz / length) * 20;
     target.vy = Math.max(target.vy, 7);
     player.coins += 5;
     broadcast(player.room, 'hit', { attackerId: player.id, targetId: target.id, reward: 5, revision: ++player.room.revision });
@@ -192,6 +192,16 @@ setInterval(() => {
   }
   for (const room of rooms.values()) {
     if (!room.players.size) continue;
+    for (const player of room.players.values()) {
+      const gravity = room.event === 'low-gravity' ? 14 : 26;
+      player.x = clamp(player.x + player.kx * TICK_MS / 1000, -28, 28);
+      player.z = clamp(player.z + player.kz * TICK_MS / 1000, -28, 28);
+      player.kx *= 0.84;
+      player.kz *= 0.84;
+      player.y += player.vy * TICK_MS / 1000;
+      player.vy -= gravity * TICK_MS / 1000;
+      if (player.y <= 1.5) { player.y = 1.5; player.vy = 0; }
+    }
     broadcast(room, 'state', { players: roomState(room), revision: ++room.revision });
   }
 }, TICK_MS);
