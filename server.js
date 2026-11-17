@@ -1,5 +1,8 @@
 import http from 'node:http';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
 
 const PORT = Number(process.env.PORT || 10000);
@@ -9,6 +12,8 @@ const BUILD = 'slap-tower-proto-1';
 const TICK_MS = 50;
 const MAX_PLAYERS = 24;
 const rooms = new Map();
+const ROOT = path.dirname(fileURLToPath(import.meta.url));
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json' };
 
 const now = () => Date.now();
 const id = () => crypto.randomUUID();
@@ -128,11 +133,18 @@ function handleAdmin(player, payload) {
 }
 
 const server = http.createServer((req, res) => {
-  if (req.url === '/health' || req.url === '/') {
+  const pathname = new URL(req.url, 'http://localhost').pathname;
+  if (pathname === '/health') {
     res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
     return res.end(JSON.stringify({ ok: true, service: 'blox-dunya-multiplayer', build: BUILD, rooms: rooms.size }));
   }
-  res.writeHead(404); res.end('Not found');
+  const requested = pathname === '/' ? '/index.html' : pathname;
+  const file = path.resolve(ROOT, `.${requested}`);
+  if (file.startsWith(ROOT + path.sep) && fs.existsSync(file) && fs.statSync(file).isFile()) {
+    res.writeHead(200, { 'content-type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream', 'cache-control': pathname.endsWith('.html') ? 'no-cache' : 'public, max-age=3600' });
+    return fs.createReadStream(file).pipe(res);
+  }
+  res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' }); res.end('Not found');
 });
 const wss = new WebSocketServer({ noServer: true, maxPayload: 8192 });
 server.on('upgrade', (req, socket, head) => {
