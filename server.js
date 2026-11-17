@@ -22,7 +22,7 @@ const id = () => crypto.randomUUID();
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 const safeName = (value) => String(value || 'Player').replace(/[^\p{L}\p{N}_ -]/gu, '').trim().slice(0, 18) || 'Player';
 const send = (ws, type, data = {}) => {
-  if (ws.readyState === ws.OPEN) ws.send(JSON.stringify({ type, ...data }));
+  if (ws && ws.readyState === ws.OPEN) ws.send(JSON.stringify({ type, ...data }));
 };
 const broadcast = (room, type, data = {}, except) => {
   for (const player of room.players.values()) {
@@ -43,6 +43,7 @@ function getRoom(code, payload = {}) {
   if (!room) {
     const requestedEvent = String(payload.event || 'classic');
     room = { code, players: new Map(), revision: 0, createdAt: now(), event: EVENTS.has(requestedEvent) ? requestedEvent : 'classic' };
+    room.players.set(`bot-${code}`, { id: `bot-${code}`, ws: null, room, name: 'AI Tower', x: TOWER[0].x + 2, y: 1.5, z: TOWER[0].z, vx: 0, vy: 0, vz: 0, kx: 0, kz: 0, frozen: false, alive: true, coins: 0, stage: 0, gear: new Set(['slap']), lastAction: new Map(), lastInput: now(), isBot: true, nextJump: now() + 1200 });
     rooms.set(code, room);
   }
   return room;
@@ -53,7 +54,7 @@ function leave(player) {
   if (!room) return;
   room.players.delete(player.id);
   broadcast(room, 'player_left', { playerId: player.id, revision: ++room.revision });
-  if (!room.players.size) rooms.delete(room.code);
+  if (room.players.size === 1 && room.players.has(`bot-${room.code}`)) rooms.delete(room.code);
   player.room = null;
 }
 
@@ -150,6 +151,22 @@ function handleAdmin(player, payload) {
   }
 }
 
+function updateBot(room) {
+  const bot = room.players.get(`bot-${room.code}`);
+  const human = [...room.players.values()].find((p) => !p.isBot && p.alive);
+  if (!bot || !human) return;
+  const dx = human.x - bot.x, dz = human.z - bot.z, distance = Math.hypot(dx, dz);
+  if (distance > 4.2) {
+    handleInput(bot, { x: dx / (distance || 1), z: dz / (distance || 1) });
+  } else {
+    handleAction(bot, { action: 'slap', target: human.id });
+  }
+  if (now() >= bot.nextJump && bot.y <= 1.51) {
+    handleAction(bot, { action: 'jump' });
+    bot.nextJump = now() + 1800;
+  }
+}
+
 const server = http.createServer((req, res) => {
   const pathname = new URL(req.url, 'http://localhost').pathname;
   if (pathname === '/health') {
@@ -192,6 +209,7 @@ setInterval(() => {
   }
   for (const room of rooms.values()) {
     if (!room.players.size) continue;
+    updateBot(room);
     for (const player of room.players.values()) {
       const gravity = room.event === 'low-gravity' ? 14 : 26;
       player.x = clamp(player.x + player.kx * TICK_MS / 1000, -28, 28);
