@@ -12,6 +12,8 @@ const BUILD = 'slap-tower-proto-1';
 const TICK_MS = 50;
 const MAX_PLAYERS = 24;
 const rooms = new Map();
+const EVENTS = new Set(['classic', 'lava-rises', 'low-gravity', 'speed-round', 'last-standing']);
+const TOWER = Array.from({ length: 22 }, (_, k) => ({ x: Math.cos(k * 0.62) * 8, z: Math.sin(k * 0.62) * 8 }));
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json' };
 
@@ -32,14 +34,15 @@ function roomState(room) {
   return [...room.players.values()].map((p) => ({
     id: p.id, name: p.name, x: p.x, y: p.y, z: p.z,
     vx: p.vx, vy: p.vy, vz: p.vz, frozen: p.frozen,
-    gear: [...p.gear], coins: p.coins, alive: p.alive
+    gear: [...p.gear], coins: p.coins, alive: p.alive, stage: p.stage
   }));
 }
 
-function getRoom(code) {
+function getRoom(code, payload = {}) {
   let room = rooms.get(code);
   if (!room) {
-    room = { code, players: new Map(), revision: 0, createdAt: now() };
+    const requestedEvent = String(payload.event || 'classic');
+    room = { code, players: new Map(), revision: 0, createdAt: now(), event: EVENTS.has(requestedEvent) ? requestedEvent : 'classic' };
     rooms.set(code, room);
   }
   return room;
@@ -56,17 +59,17 @@ function leave(player) {
 
 function join(ws, payload) {
   const code = String(payload.room || 'main').toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 20) || 'MAIN';
-  const room = getRoom(code);
+  const room = getRoom(code, payload);
   if (room.players.size >= MAX_PLAYERS) return send(ws, 'error', { code: 'room_full', message: 'Room is full' });
   const player = {
     id: id(), ws, room, name: safeName(payload.name),
-    x: 0, y: 1.5, z: 0, vx: 0, vy: 0, vz: 0,
-    frozen: false, alive: true, coins: 0,
+    x: TOWER[0].x, y: 1.5, z: TOWER[0].z, vx: 0, vy: 0, vz: 0,
+    frozen: false, alive: true, coins: 0, stage: 0,
     gear: new Set(['slap']), lastAction: new Map(), lastInput: now()
   };
   room.players.set(player.id, player);
   ws.player = player;
-  send(ws, 'joined', { build: BUILD, playerId: player.id, room: room.code, players: roomState(room), revision: room.revision });
+  send(ws, 'joined', { build: BUILD, playerId: player.id, room: room.code, event: room.event, players: roomState(room), revision: room.revision });
   broadcast(room, 'player_joined', { player: roomState(room).find((p) => p.id === player.id), revision: ++room.revision }, ws);
 }
 
@@ -109,7 +112,19 @@ function handleAction(player, payload) {
     target.vx += (dx / length) * 20;
     target.vz += (dz / length) * 20;
     target.vy = Math.max(target.vy, 7);
-    broadcast(player.room, 'hit', { attackerId: player.id, targetId: target.id, revision: ++player.room.revision });
+    player.coins += 5;
+    broadcast(player.room, 'hit', { attackerId: player.id, targetId: target.id, reward: 5, revision: ++player.room.revision });
+    send(player.ws, 'reward', { kind: 'slap', amount: 5, coins: player.coins });
+    return;
+  }
+  if (action === 'checkpoint') {
+    const next = clamp(Math.floor(Number(payload.stage) || 0), 1, TOWER.length);
+    const platform = TOWER[next - 1];
+    if (next !== player.stage + 1 || Math.hypot(player.x - platform.x, player.z - platform.z) > 4.4) return;
+    player.stage = next;
+    player.coins += next % 5 === 0 ? 25 : 10;
+    broadcast(player.room, 'checkpoint', { playerId: player.id, stage: next, reward: next % 5 === 0 ? 25 : 10, revision: ++player.room.revision });
+    send(player.ws, 'reward', { kind: 'checkpoint', amount: next % 5 === 0 ? 25 : 10, coins: player.coins });
     return;
   }
   const gear = new Set(['hook', 'cape', 'laser', 'fly', 'speed', 'jump']);
@@ -129,6 +144,9 @@ function handleAdmin(player, payload) {
     if (command === 'unfreeze') target.frozen = false;
     if (command === 'kick') { send(target.ws, 'kicked', { reason: 'Removed by admin' }); target.ws.close(4003, 'kicked'); }
     broadcast(player.room, 'admin_update', { command, targetId: target.id, revision: ++player.room.revision });
+  } else if (EVENTS.has(command)) {
+    player.room.event = command;
+    broadcast(player.room, 'round', { event: command, revision: ++player.room.revision });
   }
 }
 
