@@ -31,7 +31,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 #seg button{background:none;border-radius:999px;min-height:40px}
 #seg button[aria-pressed=true]{background:var(--raised)}
 #coins{background:var(--surface);border-radius:999px;padding:4px 12px;font-weight:700;font-size:14px;box-shadow:0 1px 3px rgba(0,0,0,.15)}
-#sbtn{background:var(--surface);border-radius:999px}
+#lang{height:40px;border:0;border-radius:999px;background:var(--surface);color:var(--text);font:600 12px inherit;padding:0 8px;box-shadow:0 1px 3px rgba(0,0,0,.15)}#sbtn{background:var(--surface);border-radius:999px}
 #search{padding:0 12px 8px;position:relative;z-index:2}
 #q{width:100%;box-sizing:border-box;height:44px;border-radius:12px;border:1px solid var(--input);background:var(--surface);color:var(--text);font:inherit;padding:0 12px}
 #pg-me{flex:1;min-height:0;display:flex;flex-direction:column;margin-top:-56px}
@@ -101,13 +101,14 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 <div id="app">
   <header id="top">
     <span id="title" class="off"></span>
-    <div id="seg"><div><button data-m="market" aria-pressed="true">Doʻkon</button><button data-m="custom" aria-pressed="false">Kiyimim</button></div></div>
+    <div id="seg"><div><button data-m="market" aria-pressed="true" data-i18n="shop">Doʻkon</button><button data-m="custom" aria-pressed="false" data-i18n="myClothes">Kiyimim</button></div></div>
+    <select id="lang" aria-label="Til / Language"><option value="uz">Oʻzbekcha</option><option value="kaa">Qaraqalpaqsha</option><option value="en">English</option></select>
     <span id="coins" aria-label="Tangalar"></span>
     <button id="sbtn" aria-label="Qidirish">⌕</button>
   </header>
-  <div id="search" class="off"><input id="q" type="search" placeholder="Narsani qidiring" aria-label="Qidirish"></div>
+  <div id="search" class="off"><input id="q" type="search" placeholder="Narsani qidiring" aria-label="Qidirish" data-i18n-placeholder="searchPlaceholder"></div>
   <main id="pg-me">
-    <div id="stage"><div id="msg">3D avatar bu qurilmada ishlamadi.</div></div>
+    <div id="stage"><div id="msg" data-i18n="avatarError">3D avatar bu qurilmada ishlamadi.</div></div>
     <section id="sheet">
       <button id="grab" aria-label="Panelni ochish yoki yopish"><i></i></button>
       <div id="tabs" role="tablist"></div>
@@ -119,18 +120,27 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
   <main id="pg-charts" class="pg off"></main>
   <main id="pg-friends" class="pg off"></main>
   <nav id="nav">
-    <button data-p="home"><span>⌂</span>Bosh</button>
-    <button data-p="charts"><span>▥</span>Reyting</button>
-    <button data-p="friends"><span>☻</span>Doʻstlar</button>
-    <button data-p="me" aria-current="page"><span>☺</span>Men</button>
+    <button data-p="home"><span>⌂</span><span data-i18n="home">Bosh</span></button>
+    <button data-p="charts"><span>▥</span><span data-i18n="ranking">Reyting</span></button>
+    <button data-p="friends"><span>☻</span><span data-i18n="friends">Doʻstlar</span></button>
+    <button data-p="me" aria-current="page"><span>☺</span><span data-i18n="me">Men</span></button>
   </nav>
 </div>
 <div id="splash" role="img" aria-label="Blok Dunyo"><svg viewBox="0 0 1180 512" aria-hidden="true"><g><polygon points="256,140 369,205 256,270 143,205" fill="#8ff0de"/><polygon points="143,205 256,270 256,400 143,335" fill="#3db8a5"/><polygon points="256,270 369,205 369,335 256,400" fill="#2a8a7b"/><polygon points="392,70 434,94 392,118 350,94" fill="#ffd98a"/><polygon points="350,94 392,118 392,166 350,142" fill="#f2b84b"/><polygon points="392,118 434,94 434,142 392,166" fill="#c98f1f"/><polygon points="120,364 155,384 120,404 85,384" fill="#a9cbff"/><polygon points="85,384 120,404 120,444 85,424" fill="#5c9cf2"/><polygon points="120,404 155,384 155,424 120,444" fill="#3f74c4"/></g><text class="lg-b" x="520" y="318" font-family="Inter,Roboto,Arial,sans-serif" font-size="150" font-weight="800" letter-spacing="2">BLOK</text><text class="lg-d" x="520" y="448" font-family="Inter,Roboto,Arial,sans-serif" font-size="150" font-weight="800" letter-spacing="2">DUNYO</text></svg></div>
 <div id="gpage" class="off"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-const $=s=>document.querySelector(s),KEY='blokdunyo:v1';
-const CATS=[['all','Hammasi'],['skin','Teri'],['sh','Koʻylak'],['pa','Shim'],['bg','Fon'],['ht','Qalpoq']];
+const $=s=>document.querySelector(s),KEY='blokdunyo:v1',LANGKEY='blokdunyo:lang';
+const I18N={
+  uz:{shop:'Doʻkon',myClothes:'Kiyimim',searchPlaceholder:'Narsani qidiring',avatarError:'3D avatar bu qurilmada ishlamadi.',home:'Bosh',ranking:'Reyting',friends:'Doʻstlar',me:'Men',all:'Hammasi',skin:'Teri',shirt:'Koʻylak',pants:'Shim',background:'Fon',hat:'Qalpoq',recommended:'Sizga tavsiya',styles:'Uslublarni koʻring',hide:'Yashirish',myItems:'Kiyimlarim',owned:'Sizniki',worn:'Kiyilgan',wear:'Kiyish',buy:'Sotib olish',notEnough:'Tanga yetmaydi',emptyCustom:'Bu yerda hali hech narsa yoʻq. Doʻkondan xarid qiling.',notFound:'Hech narsa topilmadi.',welcome:'Xush kelibsiz!',newGames:'Yangi oʻyinlar',played:'marta oʻynalgan',rankingNote:'Reyting shu qurilmadagi oʻynashlar soniga qarab tuziladi.',back:'Orqaga',play:'Oʻynash',soon:'Tez orada',language:'Til'},
+  kaa:{shop:'Dúkan',myClothes:'Kiyimlerim',searchPlaceholder:'Nárseni izlew',avatarError:'3D avatar bul qurılmada islemeydi.',home:'Bas bet',ranking:'Reyting',friends:'Doslar',me:'Men',all:'Hámmesi',skin:'Teri',shirt:'Kóylek',pants:'Shalbar',background:'Fon',hat:'Bas kiyim',recommended:'Sizge usınıs',styles:'Stillerdi kóriń',hide:'Jasıriw',myItems:'Kiyimlerim',owned:'Sizniki',worn:'Kiyilgen',wear:'Kiyiw',buy:'Satıp alıw',notEnough:'Tanga jetispeydi',emptyCustom:'Bul jerde ele hesh nárse joq. Dúkannan satıp alıń.',notFound:'Hesh nárse tabılmadı.',welcome:'Xosh keldińiz!',newGames:'Jańa oyınlar',played:'ret oynalǵan',rankingNote:'Reyting usı qurılmada oynalǵan sanǵa qaray dúziledi.',back:'Artqa',play:'Oynaw',soon:'Tez arada',language:'Til'},
+  en:{shop:'Shop',myClothes:'My clothes',searchPlaceholder:'Search items',avatarError:'3D avatar did not work on this device.',home:'Home',ranking:'Ranking',friends:'Friends',me:'Me',all:'All',skin:'Skin',shirt:'Shirt',pants:'Pants',background:'Background',hat:'Hat',recommended:'Recommended for you',styles:'Explore styles',hide:'Hide',myItems:'My clothes',owned:'Owned',worn:'Worn',wear:'Wear',buy:'Buy',notEnough:'Not enough coins',emptyCustom:'Nothing here yet. Buy something from the shop.',notFound:'Nothing found.',welcome:'Welcome!',newGames:'New games',played:'times played',rankingNote:'Ranking is based on plays on this device.',back:'Back',play:'Play',soon:'Coming soon',language:'Language'}
+};
+let lang=localStorage.getItem(LANGKEY)||'uz';
+const t=k=>(I18N[lang]&&I18N[lang][k])||I18N.uz[k]||k;
+function applyLanguage(){document.documentElement.lang=lang==='en'?'en':lang==='kaa'?'kaa':'uz';document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));document.querySelectorAll('[data-i18n-placeholder]').forEach(e=>e.placeholder=t(e.dataset.i18nPlaceholder));$('#lang').value=lang;$('#sbtn').setAttribute('aria-label',t('searchPlaceholder'));$('#q').setAttribute('aria-label',t('searchPlaceholder'));$('#coins').setAttribute('aria-label',t('owned'));}
+
+const CATS=[['all','all'],['skin','skin'],['sh','shirt'],['pa','pants'],['bg','background'],['ht','hat']];
 const EM={none:'∅',cap:'🧢',top:'🎩',crown:'👑'};
 const IT=[];const CR=['Blok Dunyo','Ustalar jamoasi','Namuna'];const add=(cat,pre,arr)=>arr.forEach((x,i)=>IT.push({cat,id:pre+i,name:x[0],price:x[1],v:x[2],by:CR[i%3],vf:i%3===1}));
 add('skin','sk',[['Och',0,'#f7e3d0'],['Bugʻdoy',0,'#f1d3b3'],['Qumli',0,'#e8c9a0'],['Qoramtir',0,'#c68e5f'],['Qora',0,'#8d5a3b']]);
@@ -180,22 +190,22 @@ const endD=()=>{dx0=null};stage.addEventListener('pointerup',endD);stage.addEven
 const $g=$('#grid');let seeAll=false;
 function setSnap(){const s=$('#sheet');s.classList.toggle('x',snap===1);s.classList.toggle('f',snap===2)}
 function card(i){const pv=i.cat==='bg'?`<i class="bgp" style="background:${i.v}"></i>`:i.cat==='ht'?`<span class="em" aria-hidden="true">${EM[i.v]}</span>`:`<i class="dot" style="background:${i.v}"></i>`;
-  const pr=worn[i.cat]===i.id?'<span class="pr">Kiyilgan</span>':owned.has(i.id)?'<span class="pr" style="color:var(--muted)">Sizniki</span>':`<span class="pr">◎ ${i.price}</span>`;
+  const pr=worn[i.cat]===i.id?`<span class="pr">${t('worn')}</span>`:owned.has(i.id)?`<span class="pr" style="color:var(--muted)">${t('owned')}</span>`:`<span class="pr">◎ ${i.price}</span>`;
   return `<button class="card" data-id="${i.id}" aria-pressed="${!!prev&&prev.id===i.id}"><span class="th">${pv}</span><b class="nm">${i.name}</b><span class="cr">${i.by}${i.vf?' <i class="vf" role="img" aria-label="tasdiqlangan">✓</i>':''}</span>${pr}</button>`}
-function gridHtml(L){if(!L.length)return `<div class="empty">${mode==='custom'?'Bu yerda hali hech narsa yoʻq. Doʻkondan xarid qiling.':'Hech narsa topilmadi.'}</div>`;
+function gridHtml(L){if(!L.length)return `<div class="empty">${mode==='custom'?t('emptyCustom'):t('notFound')}</div>`;
   if(cat!=='all'||q)return L.map(card).join('');
   const m=[...L].sort((x,y)=>parseInt(x.id.replace(/\D/g,''))-parseInt(y.id.replace(/\D/g,''))),a=m.slice(0,6),b=m.slice(6);
-  return `<div class="sec"><h3>${mode==='market'?'Sizga tavsiya':'Kiyimlarim'}</h3></div>`+a.map(card).join('')+(b.length?`<div class="sec"><h3>Uslublarni koʻring</h3><button class="pill" data-see="1">${seeAll?'Yashirish':'Hammasi'}</button></div>`+(seeAll?b:b.slice(0,3)).map(card).join(''):'')}
+  return `<div class="sec"><h3>${mode==='market'?t('recommended'):t('myItems')}</h3></div>`+a.map(card).join('')+(b.length?`<div class="sec"><h3>${t('styles')}</h3><button class="pill" data-see="1">${seeAll?t('hide'):t('all')}</button></div>`+(seeAll?b:b.slice(0,3)).map(card).join(''):'')}
 function renderSheet(){
-  $('#tabs').innerHTML=CATS.map(c=>`<button role="tab" data-c="${c[0]}" aria-selected="${cat===c[0]}">${c[1]}</button>`).join('');
+  $('#tabs').innerHTML=CATS.map(c=>`<button role="tab" data-c="${c[0]}" aria-selected="${cat===c[0]}">${t(c[1])}</button>`).join('');
   const a=$('#act');
   if(prev){const own=owned.has(prev.id),isW=worn[prev.cat]===prev.id;a.classList.remove('off');
-    a.innerHTML=`<b>${prev.name}</b>`+(own?(isW?'<span>Kiyilgan</span>':'<button class="btn" data-a="wear">Kiyish</button>'):(coins>=prev.price?`<button class="btn" data-a="buy">Sotib olish ◎ ${prev.price}</button>`:'<button class="btn" disabled>Tanga yetmaydi</button>'))}
+    a.innerHTML=`<b>${prev.name}</b>`+(own?(isW?`<span>${t('worn')}</span>`:`<button class="btn" data-a="wear">${t('wear')}</button>`):(coins>=prev.price?`<button class="btn" data-a="buy">${t('buy')} ◎ ${prev.price}</button>`:`<button class="btn" disabled>${t('notEnough')}</button>`))}
   else a.classList.add('off');
   const L=IT.filter(i=>(cat==='all'||i.cat===cat)&&(mode==='market'||owned.has(i.id))&&i.name.toLowerCase().includes(q));
   const oldHtml=L.length?L.map(i=>{const pv=i.cat==='bg'?`<i class="bgp" style="background:${i.v}"></i>`:i.cat==='ht'?`<span class="em" aria-hidden="true">${EM[i.v]}</span>`:`<i class="dot" style="background:${i.v}"></i>`;
-    const tag=worn[i.cat]===i.id?'<small class="on">Kiyilgan</small>':owned.has(i.id)?'<small>Sizniki</small>':`<small>◎ ${i.price}</small>`;
-    return `<button class="card" data-id="${i.id}" aria-pressed="${!!prev&&prev.id===i.id}">${pv}<span>${i.name}</span>${tag}</button>`}).join(''):`<div class="empty">${mode==='custom'?'Bu yerda hali hech narsa yoʻq. Doʻkondan xarid qiling.':'Hech narsa topilmadi.'}</div>`;
+    const tag=worn[i.cat]===i.id?`<small class="on">${t('worn')}</small>`:owned.has(i.id)?`<small>${t('owned')}</small>`:`<small>◎ ${i.price}</small>`;
+    return `<button class="card" data-id="${i.id}" aria-pressed="${!!prev&&prev.id===i.id}">${pv}<span>${i.name}</span>${tag}</button>`}).join(''):`<div class="empty">${mode==='custom'?t('emptyCustom'):t('notFound')}</div>`;
   $g.innerHTML=gridHtml(L);$('#coins').textContent='◎ '+coins;
   document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===mode));
   dress()}
@@ -215,17 +225,19 @@ document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{mode=b.datase
 $('#sbtn').onclick=()=>{$('#search').classList.toggle('off');if(!$('#search').classList.contains('off'))$('#q').focus();else{q='';$('#q').value='';renderSheet()}};
 $('#q').addEventListener('input',e=>{q=e.target.value.trim().toLowerCase();renderSheet()});
 /* ---- games ---- */
-function gameCard(g,rank){return `<button class="game" data-g="${g.id}">${rank?`<span class="rk">${rank}</span>`:''}<span class="gt">${g.art}</span><div><b>${g.name}</b><small>${rank?(plays[g.id]||0)+' marta oʻynalgan':g.by}</small></div></button>`}
-function renderHome(){const f=GAMES[0],rest=GAMES.slice(1),pl=g=>(plays[g.id]||0)+' marta o\u02bbynalgan';
-  $('#pg-home').innerHTML=`<div class="me"><span class="avc" style="background:${byId[worn.bg].v}"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="12" y="23" width="16" height="15" rx="2" fill="${byId[worn.sh].v}"/><rect x="13" y="7" width="14" height="14" rx="3" fill="${byId[worn.skin].v}"/></svg></span><div><b>Xush kelibsiz!</b><small>\u25ce ${coins} tanga</small></div></div><h2 class="sh">Sizga tavsiya</h2><button class="big" data-g="${f.id}"><span class="th2">${f.art}</span><b>${f.name}</b><small>${pl(f)}</small></button><h2 class="sh">Yangi o\u02bbyinlar</h2><div class="two">${rest.map(g=>`<button class="sm" data-g="${g.id}"><span class="th2">${g.art}</span><b>${g.name}</b><small>${g.by}</small></button>`).join('')}</div>`}
+function gameCard(g,rank){return `<button class="game" data-g="${g.id}">${rank?`<span class="rk">${rank}</span>`:''}<span class="gt">${g.art}</span><div><b>${g.name}</b><small>${rank?(plays[g.id]||0)+' '+t('played'):g.by}</small></div></button>`}
+function renderHome(){const f=GAMES[0],rest=GAMES.slice(1),pl=g=>(plays[g.id]||0)+' '+t('played');
+  $('#pg-home').innerHTML=`<div class="me"><span class="avc" style="background:${byId[worn.bg].v}"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="12" y="23" width="16" height="15" rx="2" fill="${byId[worn.sh].v}"/><rect x="13" y="7" width="14" height="14" rx="3" fill="${byId[worn.skin].v}"/></svg></span><div><b>${t('welcome')}</b><small>\u25ce ${coins} tanga</small></div></div><h2 class="sh">${t('recommended')}</h2><button class="big" data-g="${f.id}"><span class="th2">${f.art}</span><b>${f.name}</b><small>${pl(f)}</small></button><h2 class="sh">${t('newGames')}</h2><div class="two">${rest.map(g=>`<button class="sm" data-g="${g.id}"><span class="th2">${g.art}</span><b>${g.name}</b><small>${g.by}</small></button>`).join('')}</div>`}
 function renderGames(){
   renderHome();
   const s=[...GAMES].sort((a,b)=>(plays[b.id]||0)-(plays[a.id]||0));
-  $('#pg-charts').innerHTML='<div class="hint" style="color:var(--muted);font-size:14px">Reyting shu qurilmadagi oʻynashlar soniga qarab tuziladi.</div>'+s.map((g,i)=>gameCard(g,i+1)).join('')}
+  $('#pg-charts').innerHTML=`<div class="hint" style="color:var(--muted);font-size:14px">${t('rankingNote')}</div>`+s.map((g,i)=>gameCard(g,i+1)).join('')}
 function showGame(id){const g=GAMES.find(x=>x.id===id),p=$('#gpage');
-  p.innerHTML=`<button id="gback" aria-label="Orqaga" style="align-self:flex-start">← Orqaga</button><div id="gban">${g.art}</div><h2>${g.name}</h2><p>${g.by}</p><p>${g.d}</p>`+(g.url?`<a class="btn" id="gplay" href="${g.url}">▶ Oʻynash</a>`:'<button class="btn" disabled>Tez orada</button>');
+  p.innerHTML=`<button id="gback" aria-label="${t('back')}" style="align-self:flex-start">← ${t('back')}</button><div id="gban">${g.art}</div><h2>${g.name}</h2><p>${g.by}</p><p>${g.d}</p>`+(g.url?`<a class="btn" id="gplay" href="${g.url}">▶ ${t('play')}</a>`:`<button class="btn" disabled>${t('soon')}</button>`);
   p.classList.remove('off');$('#gback').onclick=()=>p.classList.add('off');
   const pl=$('#gplay');if(pl)pl.addEventListener('click',()=>{plays[id]=(plays[id]||0)+1;coins+=10;save();renderGames();renderSheet()})}
+$('#lang').onchange=e=>{lang=e.target.value;localStorage.setItem(LANGKEY,lang);applyLanguage();renderGames();go(page)};
+applyLanguage();
 document.querySelectorAll('.pg').forEach(p=>p.addEventListener('click',e=>{const b=e.target.closest('.game,.big,.sm');if(b)showGame(b.dataset.g)}));
 /* ---- nav ---- */
 const MARK='<svg viewBox="0 0 512 512" width="32" height="32" aria-hidden="true"><polygon points="256,140 369,205 256,270 143,205" fill="#8ff0de"/><polygon points="143,205 256,270 256,400 143,335" fill="#3db8a5"/><polygon points="256,270 369,205 369,335 256,400" fill="#2a8a7b"/><polygon points="392,70 434,94 392,118 350,94" fill="#ffd98a"/><polygon points="350,94 392,118 392,166 350,142" fill="#f2b84b"/><polygon points="392,118 434,94 434,142 392,166" fill="#c98f1f"/></svg>';
@@ -234,7 +246,7 @@ function go(p){page=p;prev=null;if(p==='home')renderHome();if(p==='friends'&&win
   document.querySelectorAll('#nav button').forEach(b=>b.toggleAttribute('aria-current',b.dataset.p===p)||b.removeAttribute('aria-current'));
   document.querySelectorAll('#nav button').forEach(b=>{if(b.dataset.p===p)b.setAttribute('aria-current','page')});
   const me=p==='me';$('#seg').classList.toggle('off',!me);$('#sbtn').classList.toggle('off',!me);$('#search').classList.add('off');$('#title').classList.toggle('off',me);
-  $('#title').innerHTML=MARK+'<span>'+(p==='home'?'Blok Dunyo':p==='friends'?'Doʻstlar':'Reyting')+'</span>';$('#top').style.background=me?'transparent':'var(--bg)';renderSheet()}
+  $('#title').innerHTML=MARK+'<span>'+(p==='home'?'Blok Dunyo':p==='friends'?t('friends'):t('ranking'))+'</span>';$('#top').style.background=me?'transparent':'var(--bg)';renderSheet()}
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.p));
 renderGames();go('me');setTimeout(()=>$('#splash').classList.add('hide'),1500);
 </script>

@@ -1,4 +1,4 @@
-const CACHE='blokdunyo-v3';
+const CACHE='blokdunyo-v4';
 const SB='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
 const THREE='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
 const FILES=['./','index.html','studiya.html','manifest.json','config.js','friends.js','icon-192.png','icon-512.png',THREE,SB];
